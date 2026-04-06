@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinta_financas/views/cadastro.dart';
-import 'package:vinta_financas/views/dashboard.dart';
+import 'package:vinta_financas/views/principal.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
