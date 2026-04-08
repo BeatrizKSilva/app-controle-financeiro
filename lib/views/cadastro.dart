@@ -11,7 +11,6 @@ class _CadastroState extends State<Cadastro> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
@@ -31,7 +30,6 @@ class _CadastroState extends State<Cadastro> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -49,13 +47,12 @@ class _CadastroState extends State<Cadastro> {
                 },
               ),
               const SizedBox(height: 12.0),
-
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Senha:',
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20.0),
                   ),
@@ -71,13 +68,12 @@ class _CadastroState extends State<Cadastro> {
                 },
               ),
               const SizedBox(height: 12.0),
-
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Confirmar Senha:',
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20.0),
                   ),
@@ -93,10 +89,10 @@ class _CadastroState extends State<Cadastro> {
                 },
               ),
               const SizedBox(height: 20.0),
-
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
+                    // ignore: avoid_print
                     print('Cadastro feito');
                   }
                 },

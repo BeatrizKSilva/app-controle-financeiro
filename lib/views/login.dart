@@ -32,7 +32,6 @@ class _LoginState extends State<Login> {
                 color: Colors.pink,
               ),
               const SizedBox(height: 30),
-
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -50,7 +49,6 @@ class _LoginState extends State<Login> {
                 },
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
@@ -84,14 +82,13 @@ class _LoginState extends State<Login> {
                 },
               ),
               const SizedBox(height: 26.0),
-
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const Dashboard(),
+                        builder: (context) => const Principal(),
                       ),
                     );
                   } else {
@@ -103,9 +100,7 @@ class _LoginState extends State<Login> {
                 ),
                 child: const Text('Entrar', style: TextStyle(fontSize: 20.0)),
               ),
-
               const SizedBox(height: 14.0),
-
               TextButton(
                 onPressed: () {
                   Navigator.push(

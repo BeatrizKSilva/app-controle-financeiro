@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-class Dashboard extends StatelessWidget {
+class Principal extends StatelessWidget {
   //depois mudar para StatefulWidget
-  const Dashboard({super.key});
+  const Principal({super.key});
 
   @override
   Widget build(BuildContext context) {
