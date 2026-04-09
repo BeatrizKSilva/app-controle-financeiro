@@ -1,3 +1,5 @@
+import 'package:vinta_financas/repositories/user_mock.dart';
+
 class LoginController {
   String? validarEmail(String? value) {
     if (value!.isEmpty) {
@@ -17,5 +19,13 @@ class LoginController {
       return 'A senha deve conter no mínimo 6 caracteres';
     }
     return null;
+  }
+
+  bool fazerLoginMock(String email, String senha) {
+    if (email == UserMock.email && senha == UserMock.senha) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

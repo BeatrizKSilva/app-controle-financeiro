@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vinta_financas/repositories/user_mock.dart';
 
 class Cadastro extends StatefulWidget {
   const Cadastro({super.key});
@@ -92,8 +93,19 @@ class _CadastroState extends State<Cadastro> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // ignore: avoid_print
-                    print('Cadastro feito');
+                    String email = _emailController.text;
+                    String senha = _passwordController.text;
+
+                    UserMock.salvarNovoUsuario(email, senha);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Conta criada com sucesso! Faça seu login.'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.pop(context);
                   }
                 },
                 style: ElevatedButton.styleFrom(

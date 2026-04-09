@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vinta_financas/controllers/login_controller.dart';
 import 'package:vinta_financas/views/cadastro.dart';
 import 'package:vinta_financas/views/principal.dart';
+import 'package:vinta_financas/repositories/user_mock.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -74,14 +75,24 @@ class _LoginState extends State<Login> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Principal(),
-                      ),
-                    );
-                  } else {
-                    print('Email ou senha incorretos!');
+                    String email = _emailController.text;
+                    String senha = _passwordController.text;
+
+                    if (email == UserMock.email && senha == UserMock.senha) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Principal(),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Email ou senha inválidos'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(
