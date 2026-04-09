@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vinta_financas/controllers/login_controller.dart';
 import 'package:vinta_financas/views/cadastro.dart';
 import 'package:vinta_financas/views/principal.dart';
 
@@ -14,6 +15,7 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  final LoginController _controller = LoginController();
 
   @override
   Widget build(BuildContext context) {
@@ -35,18 +37,13 @@ class _LoginState extends State<Login> {
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'E_mail:',
+                  labelText: 'E-mail:',
                   prefixIcon: const Icon(Icons.email),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50.0),
                   ),
                 ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Por favor, digite o emai';
-                  }
-                  return null;
-                },
+                validator: _controller.validarEmail,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -54,7 +51,7 @@ class _LoginState extends State<Login> {
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                   labelText: 'Senha:',
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible
@@ -71,15 +68,7 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(50.0),
                   ),
                 ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Por favor digite a senha';
-                  }
-                  if (value.length < 6) {
-                    return 'A senha deve conter no mínimo 6 caracteres';
-                  }
-                  return null;
-                },
+                validator: _controller.validarSenha,
               ),
               const SizedBox(height: 26.0),
               ElevatedButton(
@@ -96,7 +85,7 @@ class _LoginState extends State<Login> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 14.0),
+                  padding: const EdgeInsets.symmetric(vertical: 14.0),
                 ),
                 child: const Text('Entrar', style: TextStyle(fontSize: 20.0)),
               ),
