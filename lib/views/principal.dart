@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:vinta_financas/views/categoria.dart';
+import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
+import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 
 class Principal extends StatefulWidget {
   const Principal({super.key});
@@ -6,30 +9,32 @@ class Principal extends StatefulWidget {
   @override
   State<Principal> createState() => _PrincipalState();
 }
+
 class _PrincipalState extends State<Principal> {
   int _selectedIndex = 0;
 
   String _filtroAtual = 'Todos';
-  
+
   List<Widget> get _pages => [
         Column(
           children: [
             _buildResumoHeader(),
             Expanded(
               child: Container(
-                color: Colors.grey.shade100, 
+                color: Colors.grey.shade100,
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade400),
+                      Icon(Icons.assignment_outlined,
+                          size: 80, color: Colors.grey.shade400),
                       const SizedBox(height: 10),
-                      
                       Text(
-                        _filtroAtual == 'Todos' 
-                          ? 'Nenhum registro encontrado' 
-                          : 'Não há registros de $_filtroAtual',
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                        _filtroAtual == 'Todos'
+                            ? 'Nenhum registro encontrado'
+                            : 'Não há registros de $_filtroAtual',
+                        style: TextStyle(
+                            color: Colors.grey.shade600, fontSize: 16),
                       ),
                     ],
                   ),
@@ -38,20 +43,18 @@ class _PrincipalState extends State<Principal> {
             ),
           ],
         ),
-    const Center(child: Text('Início', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('')),
-    const Center(child: Text('Relatórios', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Opções', style: TextStyle(fontSize: 24))),
-  ];
+        const Center(child: Text('Início', style: TextStyle(fontSize: 24))),
+        const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
+        const Center(child: Text('')),
+        const Center(child: Text('Relatórios', style: TextStyle(fontSize: 24))),
+        const Center(child: Text('Opções', style: TextStyle(fontSize: 24))),
+      ];
 
   void _onItemTapped(int index) {
     if (index == 2) return;
 
     setState(() {
-
       _selectedIndex = index;
-    
     });
   }
 
@@ -71,25 +74,42 @@ class _PrincipalState extends State<Principal> {
 
       //botão flutuante
       floatingActionButton: Transform.translate(
-        
-        offset: const Offset(0, 15), // se quiser alterar a posição do botão, basta mudar os valores de x e y
-        
+        offset: const Offset(0,
+            15), // se quiser alterar a posição do botão, basta mudar os valores de x e y
+
         child: FloatingActionButton(
-
-        onPressed: (){
-
-          print("Botão flutuante pressionado");
-
-        },
-        backgroundColor: Colors.pink.shade300,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
+          onPressed: () {
+            if (_filtroAtual == 'Despesas') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Categoria(
+                    tituloTela: "Nova Despesa",
+                    controller: CategoriaDespesaController(),
+                  ),
+                ),
+              );
+            } else if (_filtroAtual == 'Receitas') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Categoria(
+                    tituloTela: "Nova Receita",
+                    controller: CategoriaReceitaController(),
+                  ),
+                ),
+              );
+            }
+          },
+          backgroundColor: Colors.pink.shade300,
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add, color: Colors.white, size: 30),
         ),
       ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-        //barra inferior
-        bottomNavigationBar: BottomNavigationBar(
+      //barra inferior
+      bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white, // fundo branco
         selectedItemColor: Colors.pink.shade300, // icone clicado fica rosa
         unselectedItemColor: Colors.grey, //icone solto fica cinza
@@ -102,23 +122,22 @@ class _PrincipalState extends State<Principal> {
         onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-          BottomNavigationBarItem(icon: Icon(Icons.show_chart), label: 'Gráficos'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add, color: Colors.transparent), 
+              icon: Icon(Icons.show_chart), label: 'Gráficos'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add, color: Colors.transparent),
             label: '',
           ),
-          
-          BottomNavigationBarItem(icon: Icon(Icons.insert_chart_outlined), label: 'Relatórios'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.insert_chart_outlined), label: 'Relatórios'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Opções'),
         ],
       ),
     );
   }
 
-  Widget _buildResumoHeader(){
-
+  Widget _buildResumoHeader() {
     return Container(
-
       color: const Color(0xFFF06292),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Row(
@@ -126,17 +145,20 @@ class _PrincipalState extends State<Principal> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildDateSelector(),
-
           _buildStatColumn('Despesas', '0', Colors.white, onTap: () {
-            setState(() { _filtroAtual = 'Despesas';});
+            setState(() {
+              _filtroAtual = 'Despesas';
+            });
           }),
-          
           _buildStatColumn('Receitas', '0', Colors.white, onTap: () {
-            setState(() { _filtroAtual = 'Receitas'; });
+            setState(() {
+              _filtroAtual = 'Receitas';
+            });
           }),
-
           _buildStatColumn('Saldo', '0', Colors.white, isBold: true, onTap: () {
-            setState(() { _filtroAtual = 'Saldo'; });
+            setState(() {
+              _filtroAtual = 'Saldo';
+            });
           }),
         ],
       ),
@@ -156,7 +178,8 @@ class _PrincipalState extends State<Principal> {
           children: [
             Text(
               '2026',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
             ),
             const Row(
               children: [
@@ -176,7 +199,8 @@ class _PrincipalState extends State<Principal> {
     );
   }
 
-  Widget _buildStatColumn(String title, String value, Color color, {bool isBold = false, VoidCallback? onTap}) {
+  Widget _buildStatColumn(String title, String value, Color color,
+      {bool isBold = false, VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -186,7 +210,8 @@ class _PrincipalState extends State<Principal> {
           children: [
             Text(
               title,
-              style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 12),
+              style:
+                  TextStyle(color: color.withValues(alpha: 0.8), fontSize: 12),
             ),
             const SizedBox(height: 4),
             Text(
@@ -199,7 +224,6 @@ class _PrincipalState extends State<Principal> {
             ),
           ],
         ),
-
       ),
     );
   }
