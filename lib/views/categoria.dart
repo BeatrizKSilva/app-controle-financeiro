@@ -152,6 +152,76 @@ class _CategoriaState extends State<Categoria> {
     );
   }
 
+  void _insercaoValor(BuildContext context, dynamic categoria) {
+    TextEditingController valorController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 20,
+            left: 20,
+            right: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Inserir valor: ',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: valorController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                autofocus: true,
+                decoration: InputDecoration(
+                  prefixText: 'R\$ ',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.pink.shade300,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    if (valorController.text.isNotEmpty) {
+                      String valorTexto =
+                          valorController.text.replaceAll(',', '.');
+                      double valor = double.tryParse(valorTexto) ?? 0.0;
+                      if (valor > 0) {
+                        Navigator.pop(context);
+                      }
+                      Navigator.pop(context, {
+                        'valor': valor,
+                        'categoria': categoria,
+                      });
+                    }
+                  },
+                  child: const Text('Confirmar'),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,7 +265,7 @@ class _CategoriaState extends State<Categoria> {
                   final categoria = widget.controller.categorias[index];
                   return GestureDetector(
                     onTap: () {
-                      print('Categoria Clicada: ${categoria.nome}');
+                      _insercaoValor(context, categoria);
                     },
                     child: Column(
                       children: [

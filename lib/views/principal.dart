@@ -30,6 +30,12 @@ class _PrincipalState extends State<Principal> {
     'Dez'
   ];
 
+  double _totalDespesas = 0.0;
+  double _totalReceitas = 0.0;
+  double get _saldo => _totalReceitas - _totalDespesas;
+
+  List<Map<String, dynamic>> _transacoes = [];
+
   Future<void> _escolherData(BuildContext context) async {
     int anoTemporario = _dataSelecionada.year;
 
@@ -124,23 +130,7 @@ class _PrincipalState extends State<Principal> {
             Expanded(
               child: Container(
                 color: Colors.grey.shade100,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.assignment_outlined,
-                          size: 80, color: Colors.grey.shade400),
-                      const SizedBox(height: 10),
-                      Text(
-                        _filtroAtual == 'Todos'
-                            ? 'Nenhum registro encontrado'
-                            : 'Não há registros de $_filtroAtual',
-                        style: TextStyle(
-                            color: Colors.grey.shade600, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
+                child: _buildListaTransacoes(),
               ),
             ),
           ],
@@ -180,9 +170,9 @@ class _PrincipalState extends State<Principal> {
             15), // se quiser alterar a posição do botão, basta mudar os valores de x e y
 
         child: FloatingActionButton(
-          onPressed: () {
+          onPressed: () async {
             if (_filtroAtual == 'Receitas') {
-              Navigator.push(
+              final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => Categoria(
@@ -191,8 +181,19 @@ class _PrincipalState extends State<Principal> {
                   ),
                 ),
               );
+
+              if (resultado != null && resultado is Map) {
+                setState(() {
+                  _totalReceitas += resultado['valor'];
+                  _transacoes.add({
+                    'tipo': 'receita',
+                    'valor': resultado['valor'],
+                    'categoria': resultado['categoria'],
+                  });
+                });
+              }
             } else {
-              Navigator.push(
+              final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => Categoria(
@@ -201,6 +202,16 @@ class _PrincipalState extends State<Principal> {
                   ),
                 ),
               );
+              if (resultado != null && resultado is Map) {
+                setState(() {
+                  _totalDespesas += resultado['valor'];
+                  _transacoes.add({
+                    'tipo': 'despesa', // Para sabermos a cor depois
+                    'valor': resultado['valor'],
+                    'categoria': resultado['categoria'],
+                  });
+                });
+              }
             }
           },
           backgroundColor: Colors.pink.shade300,
@@ -238,6 +249,78 @@ class _PrincipalState extends State<Principal> {
     );
   }
 
+  Widget _buildListaTransacoes() {
+    List<Map<String, dynamic>> transacoesFiltradas = _transacoes;
+    if (_filtroAtual == 'Receitas') {
+      transacoesFiltradas =
+          _transacoes.where((t) => t['tipo'] == 'receita').toList();
+    } else if (_filtroAtual == 'Despesas') {
+      transacoesFiltradas =
+          _transacoes.where((t) => t['tipo'] == 'despesa').toList();
+    }
+    if (transacoesFiltradas.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.assignment_outlined,
+                size: 80, color: Colors.grey.shade400),
+            const SizedBox(height: 10),
+            Text(
+              _filtroAtual == 'Todos' || _filtroAtual == 'Saldo'
+                  ? 'Nenhum registro encontrado'
+                  : 'Não há registros de $_filtroAtual',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      itemCount: transacoesFiltradas.length,
+      padding: const EdgeInsets.all(10),
+      itemBuilder: (context, index) {
+        final transacao = transacoesFiltradas[index];
+        final categoria = transacao['categoria'];
+        final isReceita = transacao['tipo'] == 'receita';
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white, // Fundo branco contínuo
+            border: Border(
+              // Linha sutil na parte de baixo para separar os itens da lista
+              bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+            ),
+          ),
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            leading: Container(
+              height: 45,
+              width: 45,
+              decoration:
+                  BoxDecoration(color: categoria.cor, shape: BoxShape.circle),
+              child: Icon(categoria.icone, color: Colors.white),
+            ),
+            title: Text(
+              categoria.nome,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            // O subtítulo que estava aqui foi removido!
+            trailing: Text(
+              '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildResumoHeader() {
     return Container(
       color: const Color(0xFFF06292),
@@ -247,19 +330,21 @@ class _PrincipalState extends State<Principal> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildDateSelector(),
-          _buildStatColumn('Despesas', '0', Colors.white,
+          _buildStatColumn(
+              'Despesas', _totalDespesas.toStringAsFixed(2), Colors.white,
               isSelected: _filtroAtual == 'Despesas', onTap: () {
             setState(() {
               _filtroAtual = 'Despesas';
             });
           }),
-          _buildStatColumn('Receitas', '0', Colors.white,
+          _buildStatColumn(
+              'Receitas', _totalReceitas.toStringAsFixed(2), Colors.white,
               isSelected: _filtroAtual == 'Receitas', onTap: () {
             setState(() {
               _filtroAtual = 'Receitas';
             });
           }),
-          _buildStatColumn('Saldo', '0', Colors.white,
+          _buildStatColumn('Saldo', _saldo.toStringAsFixed(2), Colors.white,
               isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
             setState(() {
               _filtroAtual = 'Saldo';
