@@ -10,7 +10,101 @@ class _PrincipalState extends State<Principal> {
   int _selectedIndex = 0;
 
   String _filtroAtual = 'Todos';
+
+  DateTime _dataSelecionada = DateTime.now();
+  final List<String> _meses = const['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
   
+  Future<void> _escolherData(BuildContext context) async {
+
+    int anoTemporario = _dataSelecionada.year;
+
+    final DateTime? dataEscolhida = await showDialog<DateTime?>(
+      context: context,
+      builder: (BuildContext context) {
+
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 18),
+                    onPressed: () => setStateDialog(() => anoTemporario--),
+                    highlightColor: Colors.pink.shade100,
+                    splashColor: Colors.pink.shade200,
+                  ),
+                  Text(
+                    '$anoTemporario',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, size: 18),
+                    onPressed: () => setStateDialog(() => anoTemporario++),
+                    highlightColor: Colors.pink.shade100,
+                    splashColor: Colors.pink.shade200,
+                  ),
+                ],
+              ),
+              
+              content: SizedBox(
+                width: 300,
+                height: 250,
+                child: GridView.builder(
+                  itemCount: 12,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 1.5,
+                  ),
+
+                  itemBuilder: (context, index) {
+
+                    bool isSelected = (_dataSelecionada.month == index + 1) && (_dataSelecionada.year == anoTemporario);
+
+                    return InkWell(
+                      onTap: () {
+
+                        Navigator.pop(context, DateTime(anoTemporario, 1));
+
+                      },
+
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        margin: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.pink.shade300 : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+
+                        alignment: Alignment.center,
+                        child: Text(
+                          _meses[index].toUpperCase(),
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (dataEscolhida != null) {
+      setState(() {
+        _dataSelecionada = dataEscolhida;
+      });
+    }
+  }
+
   List<Widget> get _pages => [
         Column(
           children: [
@@ -127,15 +221,15 @@ class _PrincipalState extends State<Principal> {
         children: [
           _buildDateSelector(),
 
-          _buildStatColumn('Despesas', '0', Colors.white, onTap: () {
+          _buildStatColumn('Despesas', '0', Colors.white, isSelected: _filtroAtual == 'Despesas', onTap: () {
             setState(() { _filtroAtual = 'Despesas';});
           }),
           
-          _buildStatColumn('Receitas', '0', Colors.white, onTap: () {
+          _buildStatColumn('Receitas', '0', Colors.white, isSelected: _filtroAtual == 'Receitas', onTap: () {
             setState(() { _filtroAtual = 'Receitas'; });
           }),
 
-          _buildStatColumn('Saldo', '0', Colors.white, isBold: true, onTap: () {
+          _buildStatColumn('Saldo', '0', Colors.white, isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
             setState(() { _filtroAtual = 'Saldo'; });
           }),
         ],
@@ -145,9 +239,7 @@ class _PrincipalState extends State<Principal> {
 
   Widget _buildDateSelector() {
     return InkWell(
-      onTap: () {
-        print("Seletor de data clicado!");
-      },
+      onTap: () => _escolherData(context),
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.all(4.0),
@@ -155,19 +247,19 @@ class _PrincipalState extends State<Principal> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '2026',
+              '${_dataSelecionada.year}',
               style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
             ),
-            const Row(
+            Row(
               children: [
                 Text(
-                  'abr.',
-                  style: TextStyle(
+                  _meses[_dataSelecionada.month - 1],
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold),
                 ),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+                const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
               ],
             ),
           ],
@@ -176,12 +268,17 @@ class _PrincipalState extends State<Principal> {
     );
   }
 
-  Widget _buildStatColumn(String title, String value, Color color, {bool isBold = false, VoidCallback? onTap}) {
+  Widget _buildStatColumn(String title, String value, Color color, {bool isBold = false, bool isSelected = false, VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.black.withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+
         child: Column(
           children: [
             Text(
