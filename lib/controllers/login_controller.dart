@@ -2,10 +2,14 @@ import 'package:vinta_financas/repositories/user_mock.dart';
 
 class LoginController {
   String? validarEmail(String? value) {
-    if (value!.isEmpty) {
-      return 'Por favor, digite o e-mai';
+    String emailTratado = value!.trim();
+
+    if (emailTratado.isEmpty) {
+      return 'Por favor, digite o e-mail';
     }
-    if (value.length < 5 || !value.contains('@') || !value.contains('.')) {
+    if (emailTratado.length < 5 ||
+        !emailTratado.contains('@') ||
+        !emailTratado.contains('.')) {
       return 'E-mail inválido';
     }
     return null;

@@ -75,8 +75,8 @@ class _LoginState extends State<Login> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    String email = _emailController.text;
-                    String senha = _passwordController.text;
+                    String email = _emailController.text.trim();
+                    String senha = _passwordController.text.trim();
 
                     if (email == UserMock.email && senha == UserMock.senha) {
                       Navigator.pushReplacement(
