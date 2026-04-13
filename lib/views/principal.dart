@@ -15,8 +15,10 @@ class _PrincipalState extends State<Principal> {
   int _selectedIndex = 0;
   String _filtroAtual = 'Todos';
 
-  final CategoriaReceitaController _receitaController = CategoriaReceitaController();
-  final CategoriaDespesaController _despesaController = CategoriaDespesaController();
+  final CategoriaReceitaController _receitaController =
+      CategoriaReceitaController();
+  final CategoriaDespesaController _despesaController =
+      CategoriaDespesaController();
 
   DateTime _dataSelecionada = DateTime.now();
   final List<String> _meses = const [
@@ -87,7 +89,8 @@ class _PrincipalState extends State<Principal> {
 
                     return InkWell(
                       onTap: () {
-                        Navigator.pop(context, DateTime(anoTemporario, index + 1));
+                        Navigator.pop(
+                            context, DateTime(anoTemporario, index + 1));
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -142,7 +145,6 @@ class _PrincipalState extends State<Principal> {
         const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
         const Center(child: Text('')),
         const Center(child: Text('Relatórios', style: TextStyle(fontSize: 24))),
-        
         Opcoes(
           receitaController: _receitaController,
           despesaController: _despesaController,
@@ -196,6 +198,7 @@ class _PrincipalState extends State<Principal> {
                     'tipo': 'receita',
                     'valor': resultado['valor'],
                     'categoria': resultado['categoria'],
+                    'data': resultado['data'],
                   });
                 });
               }
@@ -216,6 +219,7 @@ class _PrincipalState extends State<Principal> {
                     'tipo': 'despesa', // Para sabermos a cor depois
                     'valor': resultado['valor'],
                     'categoria': resultado['categoria'],
+                    'data': resultado['data'],
                   });
                 });
               }
@@ -313,7 +317,10 @@ class _PrincipalState extends State<Principal> {
               categoria.nome,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            // O subtítulo que estava aqui foi removido!
+            subtitle: Text(
+              "${transacao['data'].day}/${transacao['data'].month}/${transacao['data'].year}",
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
             trailing: Text(
               '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
               style: const TextStyle(

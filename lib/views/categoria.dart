@@ -155,6 +155,8 @@ class _CategoriaState extends State<Categoria> {
   void _insercaoValor(BuildContext context, dynamic categoria) {
     TextEditingController valorController = TextEditingController();
 
+    DateTime data = DateTime.now();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -162,61 +164,101 @@ class _CategoriaState extends State<Categoria> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: 20,
-            left: 20,
-            right: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Inserir valor: ',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        return StatefulBuilder(
+          builder: (context, setStateBottomSheet) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: 20,
+                left: 20,
+                right: 20,
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: valorController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                autofocus: true,
-                decoration: InputDecoration(
-                  prefixText: 'R\$ ',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Inserir valor: ',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            "${data.day}/${data.month}/${data.year}",
+                            style: TextStyle(color: Colors.grey.shade700),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.calendar_month,
+                                color: Colors.pink),
+                            onPressed: () async {
+                              final DateTime? dataEscolhida =
+                                  await showDatePicker(
+                                context: context,
+                                initialDate: data!,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100),
+                              );
+
+                              if (dataEscolhida != null &&
+                                  dataEscolhida != data) {
+                                setStateBottomSheet(() {
+                                  data = dataEscolhida;
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink.shade300,
-                    foregroundColor: Colors.white,
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: valorController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      prefixText: 'R\$ ',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
-                  onPressed: () {
-                    if (valorController.text.isNotEmpty) {
-                      String valorTexto =
-                          valorController.text.replaceAll(',', '.');
-                      double valor = double.tryParse(valorTexto) ?? 0.0;
-                      if (valor > 0) {
-                        Navigator.pop(context);
-                      }
-                      Navigator.pop(context, {
-                        'valor': valor,
-                        'categoria': categoria,
-                      });
-                    }
-                  },
-                  child: const Text('Confirmar'),
-                ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pink.shade300,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        if (valorController.text.isNotEmpty) {
+                          String valorTexto =
+                              valorController.text.replaceAll(',', '.');
+                          double valor = double.tryParse(valorTexto) ?? 0.0;
+
+                          if (valor > 0) {
+                            Navigator.pop(context);
+                            Navigator.pop(context, {
+                              'valor': valor,
+                              'categoria': categoria,
+                              'data': data,
+                            });
+                          }
+                        }
+                      },
+                      child: const Text('Confirmar'),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            );
+          },
         );
       },
     );

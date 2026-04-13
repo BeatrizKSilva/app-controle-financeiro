@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'package:vinta_financas/views/principal.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'views/login.dart';
 
 void main() {
@@ -17,6 +17,14 @@ class VintaApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('pt', 'BR'),
+      ],
       home: const Login(),
     );
   }
