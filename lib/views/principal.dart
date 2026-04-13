@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
 import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 import 'package:vinta_financas/views/categoria.dart';
+import 'package:vinta_financas/views/opcoes.dart';
 
 class Principal extends StatefulWidget {
   const Principal({super.key});
@@ -13,6 +14,9 @@ class Principal extends StatefulWidget {
 class _PrincipalState extends State<Principal> {
   int _selectedIndex = 0;
   String _filtroAtual = 'Todos';
+
+  final CategoriaReceitaController _receitaController = CategoriaReceitaController();
+  final CategoriaDespesaController _despesaController = CategoriaDespesaController();
 
   DateTime _dataSelecionada = DateTime.now();
   final List<String> _meses = const [
@@ -83,7 +87,7 @@ class _PrincipalState extends State<Principal> {
 
                     return InkWell(
                       onTap: () {
-                        Navigator.pop(context, DateTime(anoTemporario, 1));
+                        Navigator.pop(context, DateTime(anoTemporario, index + 1));
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -135,11 +139,14 @@ class _PrincipalState extends State<Principal> {
             ),
           ],
         ),
-        const Center(child: Text('Início', style: TextStyle(fontSize: 24))),
         const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
         const Center(child: Text('')),
         const Center(child: Text('Relatórios', style: TextStyle(fontSize: 24))),
-        const Center(child: Text('Opções', style: TextStyle(fontSize: 24))),
+        
+        Opcoes(
+          receitaController: _receitaController,
+          despesaController: _despesaController,
+        ),
       ];
 
   void _onItemTapped(int index) {
@@ -177,7 +184,7 @@ class _PrincipalState extends State<Principal> {
                 MaterialPageRoute(
                   builder: (context) => Categoria(
                     tituloTela: "Nova Receita",
-                    controller: CategoriaReceitaController(),
+                    controller: _receitaController,
                   ),
                 ),
               );
@@ -198,7 +205,7 @@ class _PrincipalState extends State<Principal> {
                 MaterialPageRoute(
                   builder: (context) => Categoria(
                     tituloTela: "Nova Despesa",
-                    controller: CategoriaDespesaController(),
+                    controller: _despesaController,
                   ),
                 ),
               );
