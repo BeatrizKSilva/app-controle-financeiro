@@ -197,7 +197,7 @@ class _CategoriaState extends State<Categoria> {
                               final DateTime? dataEscolhida =
                                   await showDatePicker(
                                 context: context,
-                                initialDate: data!,
+                                initialDate: data,
                                 firstDate: DateTime(2000),
                                 lastDate: DateTime(2100),
                               );

@@ -36,9 +36,23 @@ class _PrincipalState extends State<Principal> {
     'Dez'
   ];
 
-  double _totalDespesas = 0.0;
-  double _totalReceitas = 0.0;
-  double get _saldo => _totalReceitas - _totalDespesas;
+  double get _despesasDoMes {
+
+    return _transacoes
+        .where((t) => t['tipo'] == 'despesa' && t['data'].month == _dataSelecionada.month && t['data'].year == _dataSelecionada.year)
+        .fold(0.0, (soma, item) => soma + item['valor']);
+
+  }
+
+  double get _receitasDoMes {
+
+    return _transacoes
+        .where((t) => t['tipo'] == 'receita' && t['data'].month == _dataSelecionada.month && t['data'].year == _dataSelecionada.year)
+        .fold(0.0, (soma, item) => soma + item['valor']);
+
+  }
+
+  double get _saldoDoMes => _receitasDoMes - _despesasDoMes;
 
   List<Map<String, dynamic>> _transacoes = [];
 
@@ -193,7 +207,6 @@ class _PrincipalState extends State<Principal> {
 
               if (resultado != null && resultado is Map) {
                 setState(() {
-                  _totalReceitas += resultado['valor'];
                   _transacoes.add({
                     'tipo': 'receita',
                     'valor': resultado['valor'],
@@ -214,7 +227,6 @@ class _PrincipalState extends State<Principal> {
               );
               if (resultado != null && resultado is Map) {
                 setState(() {
-                  _totalDespesas += resultado['valor'];
                   _transacoes.add({
                     'tipo': 'despesa', // Para sabermos a cor depois
                     'valor': resultado['valor'],
@@ -261,32 +273,35 @@ class _PrincipalState extends State<Principal> {
   }
 
   Widget _buildListaTransacoes() {
-    List<Map<String, dynamic>> transacoesFiltradas = _transacoes;
+    List<Map<String, dynamic>> transacoesFiltradas = _transacoes.where((t) {
+      return t['data'].month == _dataSelecionada.month &&
+             t['data'].year == _dataSelecionada.year;
+    }).toList();
+
     if (_filtroAtual == 'Receitas') {
-      transacoesFiltradas =
-          _transacoes.where((t) => t['tipo'] == 'receita').toList();
+      transacoesFiltradas = transacoesFiltradas.where((t) => t['tipo'] == 'receita').toList();
     } else if (_filtroAtual == 'Despesas') {
-      transacoesFiltradas =
-          _transacoes.where((t) => t['tipo'] == 'despesa').toList();
+      transacoesFiltradas = transacoesFiltradas.where((t) => t['tipo'] == 'despesa').toList();
     }
+
     if (transacoesFiltradas.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.assignment_outlined,
-                size: 80, color: Colors.grey.shade400),
+            Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 10),
             Text(
               _filtroAtual == 'Todos' || _filtroAtual == 'Saldo'
-                  ? 'Nenhum registro encontrado'
-                  : 'Não há registros de $_filtroAtual',
+                  ? 'Nenhum registro no mês selecionado'
+                  : 'Não há registros de $_filtroAtual neste mês',
               style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
             ),
           ],
         ),
       );
     }
+
     return ListView.builder(
       itemCount: transacoesFiltradas.length,
       padding: const EdgeInsets.all(10),
@@ -323,8 +338,8 @@ class _PrincipalState extends State<Principal> {
             ),
             trailing: Text(
               '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: Colors.black87,
+              style: TextStyle(
+                color: isReceita ? Colors.green : Colors.red,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -344,25 +359,19 @@ class _PrincipalState extends State<Principal> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildDateSelector(),
-          _buildStatColumn(
-              'Despesas', _totalDespesas.toStringAsFixed(2), Colors.white,
+          _buildStatColumn('Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
               isSelected: _filtroAtual == 'Despesas', onTap: () {
-            setState(() {
-              _filtroAtual = 'Despesas';
-            });
+            setState(() { _filtroAtual = 'Despesas'; });
           }),
-          _buildStatColumn(
-              'Receitas', _totalReceitas.toStringAsFixed(2), Colors.white,
+
+          _buildStatColumn('Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
               isSelected: _filtroAtual == 'Receitas', onTap: () {
-            setState(() {
-              _filtroAtual = 'Receitas';
-            });
+            setState(() { _filtroAtual = 'Receitas'; });
           }),
-          _buildStatColumn('Saldo', _saldo.toStringAsFixed(2), Colors.white,
+
+          _buildStatColumn('Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
               isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
-            setState(() {
-              _filtroAtual = 'Saldo';
-            });
+            setState(() { _filtroAtual = 'Saldo'; });
           }),
         ],
       ),
