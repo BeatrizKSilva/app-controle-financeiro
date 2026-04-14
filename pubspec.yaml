@@ -12,6 +12,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_localizations:
     sdk: flutter
+  flutter_slidable: ^4.0.3
 
 dev_dependencies:
   flutter_test:

@@ -3,6 +3,8 @@ import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
 import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 import 'package:vinta_financas/views/categoria.dart';
 import 'package:vinta_financas/views/opcoes.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:vinta_financas/widgets/painel_valor.dart';
 
 class Principal extends StatefulWidget {
   const Principal({super.key});
@@ -37,19 +39,21 @@ class _PrincipalState extends State<Principal> {
   ];
 
   double get _despesasDoMes {
-
     return _transacoes
-        .where((t) => t['tipo'] == 'despesa' && t['data'].month == _dataSelecionada.month && t['data'].year == _dataSelecionada.year)
+        .where((t) =>
+            t['tipo'] == 'despesa' &&
+            t['data'].month == _dataSelecionada.month &&
+            t['data'].year == _dataSelecionada.year)
         .fold(0.0, (soma, item) => soma + item['valor']);
-
   }
 
   double get _receitasDoMes {
-
     return _transacoes
-        .where((t) => t['tipo'] == 'receita' && t['data'].month == _dataSelecionada.month && t['data'].year == _dataSelecionada.year)
+        .where((t) =>
+            t['tipo'] == 'receita' &&
+            t['data'].month == _dataSelecionada.month &&
+            t['data'].year == _dataSelecionada.year)
         .fold(0.0, (soma, item) => soma + item['valor']);
-
   }
 
   double get _saldoDoMes => _receitasDoMes - _despesasDoMes;
@@ -275,13 +279,15 @@ class _PrincipalState extends State<Principal> {
   Widget _buildListaTransacoes() {
     List<Map<String, dynamic>> transacoesFiltradas = _transacoes.where((t) {
       return t['data'].month == _dataSelecionada.month &&
-             t['data'].year == _dataSelecionada.year;
+          t['data'].year == _dataSelecionada.year;
     }).toList();
 
     if (_filtroAtual == 'Receitas') {
-      transacoesFiltradas = transacoesFiltradas.where((t) => t['tipo'] == 'receita').toList();
+      transacoesFiltradas =
+          transacoesFiltradas.where((t) => t['tipo'] == 'receita').toList();
     } else if (_filtroAtual == 'Despesas') {
-      transacoesFiltradas = transacoesFiltradas.where((t) => t['tipo'] == 'despesa').toList();
+      transacoesFiltradas =
+          transacoesFiltradas.where((t) => t['tipo'] == 'despesa').toList();
     }
 
     if (transacoesFiltradas.isEmpty) {
@@ -289,7 +295,8 @@ class _PrincipalState extends State<Principal> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade400),
+            Icon(Icons.assignment_outlined,
+                size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 10),
             Text(
               _filtroAtual == 'Todos' || _filtroAtual == 'Saldo'
@@ -310,38 +317,78 @@ class _PrincipalState extends State<Principal> {
         final categoria = transacao['categoria'];
         final isReceita = transacao['tipo'] == 'receita';
 
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white, // Fundo branco contínuo
-            border: Border(
-              // Linha sutil na parte de baixo para separar os itens da lista
-              bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-            ),
+        return Slidable(
+          key: ValueKey(transacao.hashCode),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                onPressed: (context) async {
+                  final resultado = await mostrarPainelValor(
+                    context: context,
+                    titulo: 'Editar valor',
+                    corBotao: Colors.orange,
+                    valorInicial: transacao['valor'],
+                    dataInicial: transacao['data'],
+                  );
+                  if (resultado != null) {
+                    setState(() {
+                      transacao['valor'] = resultado['valor'];
+                      transacao['data'] = resultado['data'];
+                    });
+                  }
+                },
+                backgroundColor: Colors.orange.shade400,
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: 'Editar',
+              ),
+              SlidableAction(
+                onPressed: (context) {
+                  setState(() {
+                    _transacoes.remove(transacao);
+                  });
+                },
+                backgroundColor: Colors.red.shade400,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: 'Excluir',
+              ),
+            ],
           ),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            leading: Container(
-              height: 45,
-              width: 45,
-              decoration:
-                  BoxDecoration(color: categoria.cor, shape: BoxShape.circle),
-              child: Icon(categoria.icone, color: Colors.white),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+              ),
             ),
-            title: Text(
-              categoria.nome,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            subtitle: Text(
-              "${transacao['data'].day}/${transacao['data'].month}/${transacao['data'].year}",
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-            ),
-            trailing: Text(
-              '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
-              style: TextStyle(
-                color: isReceita ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+            child: ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              leading: Container(
+                height: 45,
+                width: 45,
+                decoration:
+                    BoxDecoration(color: categoria.cor, shape: BoxShape.circle),
+                child: Icon(categoria.icone, color: Colors.white),
+              ),
+              title: Text(
+                categoria.nome,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              subtitle: Text(
+                "${transacao['data'].day}/${transacao['data'].month}/${transacao['data'].year}",
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
+              trailing: Text(
+                '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: isReceita ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
@@ -359,19 +406,26 @@ class _PrincipalState extends State<Principal> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildDateSelector(),
-          _buildStatColumn('Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
+          _buildStatColumn(
+              'Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
               isSelected: _filtroAtual == 'Despesas', onTap: () {
-            setState(() { _filtroAtual = 'Despesas'; });
+            setState(() {
+              _filtroAtual = 'Despesas';
+            });
           }),
-
-          _buildStatColumn('Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
+          _buildStatColumn(
+              'Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
               isSelected: _filtroAtual == 'Receitas', onTap: () {
-            setState(() { _filtroAtual = 'Receitas'; });
+            setState(() {
+              _filtroAtual = 'Receitas';
+            });
           }),
-
-          _buildStatColumn('Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
+          _buildStatColumn(
+              'Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
               isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
-            setState(() { _filtroAtual = 'Saldo'; });
+            setState(() {
+              _filtroAtual = 'Saldo';
+            });
           }),
         ],
       ),
