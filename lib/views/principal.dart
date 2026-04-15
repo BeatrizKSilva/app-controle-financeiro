@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
 import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
+import 'package:vinta_financas/controllers/transacao_controller.dart';
 import 'package:vinta_financas/views/categoria.dart';
 import 'package:vinta_financas/views/graficos.dart';
 import 'package:vinta_financas/views/opcoes.dart';
@@ -23,34 +24,31 @@ class _PrincipalState extends State<Principal> {
       CategoriaReceitaController();
   final CategoriaDespesaController _despesaController =
       CategoriaDespesaController();
+  final TransacaoController _transacaoController = TransacaoController();
 
   DateTime _dataSelecionada = DateTime.now();
   final List<String> _meses = const [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez'
   ];
 
-  double get _despesasDoMes {
-    return _transacoes
-        .where((t) =>
-            t['tipo'] == 'despesa' &&
-            t['data'].month == _dataSelecionada.month &&
-            t['data'].year == _dataSelecionada.year)
-        .fold(0.0, (soma, item) => soma + item['valor']);
+  @override
+  void initState() {
+    super.initState();
+    _transacaoController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
-
-  double get _receitasDoMes {
-    return _transacoes
-        .where((t) =>
-            t['tipo'] == 'receita' &&
-            t['data'].month == _dataSelecionada.month &&
-            t['data'].year == _dataSelecionada.year)
-        .fold(0.0, (soma, item) => soma + item['valor']);
-  }
-
-  double get _saldoDoMes => _receitasDoMes - _despesasDoMes;
-
-  List<Map<String, dynamic>> _transacoes = [];
 
   Future<void> _escolherData(BuildContext context) async {
     int anoTemporario = _dataSelecionada.year;
@@ -151,17 +149,9 @@ class _PrincipalState extends State<Principal> {
             ),
           ],
         ),
-        
-        Graficos(
-          transacoes: _transacoes,
-          dataSelecionada: _dataSelecionada,
-          aoEscolherData: _escolherData,
-        ),
-        
+        const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
         const Center(child: Text('')),
-        
-        Relatorio(transacoes: _transacoes),
-        
+        Relatorio(transacoes: _transacaoController.transacoes),
         Opcoes(
           receitaController: _receitaController,
           despesaController: _despesaController,
@@ -192,9 +182,7 @@ class _PrincipalState extends State<Principal> {
 
       //botão flutuante
       floatingActionButton: Transform.translate(
-        offset: const Offset(0,
-            15), // se quiser alterar a posição do botão, basta mudar os valores de x e y
-
+        offset: const Offset(0, 15),
         child: FloatingActionButton(
           onPressed: () async {
             if (_filtroAtual == 'Receitas') {
@@ -209,13 +197,11 @@ class _PrincipalState extends State<Principal> {
               );
 
               if (resultado != null && resultado is Map) {
-                setState(() {
-                  _transacoes.add({
-                    'tipo': 'receita',
-                    'valor': resultado['valor'],
-                    'categoria': resultado['categoria'],
-                    'data': resultado['data'],
-                  });
+                _transacaoController.adicionarTransacao({
+                  'tipo': 'receita',
+                  'valor': resultado['valor'],
+                  'categoria': resultado['categoria'],
+                  'data': resultado['data'],
                 });
               }
             } else {
@@ -229,13 +215,11 @@ class _PrincipalState extends State<Principal> {
                 ),
               );
               if (resultado != null && resultado is Map) {
-                setState(() {
-                  _transacoes.add({
-                    'tipo': 'despesa', // Para sabermos a cor depois
-                    'valor': resultado['valor'],
-                    'categoria': resultado['categoria'],
-                    'data': resultado['data'],
-                  });
+                _transacaoController.adicionarTransacao({
+                  'tipo': 'despesa',
+                  'valor': resultado['valor'],
+                  'categoria': resultado['categoria'],
+                  'data': resultado['data'],
                 });
               }
             }
@@ -276,7 +260,8 @@ class _PrincipalState extends State<Principal> {
   }
 
   Widget _buildListaTransacoes() {
-    List<Map<String, dynamic>> transacoesFiltradas = _transacoes.where((t) {
+    List<Map<String, dynamic>> transacoesFiltradas =
+        _transacaoController.transacoes.where((t) {
       return t['data'].month == _dataSelecionada.month &&
           t['data'].year == _dataSelecionada.year;
     }).toList();
@@ -331,10 +316,11 @@ class _PrincipalState extends State<Principal> {
                     dataInicial: transacao['data'],
                   );
                   if (resultado != null) {
-                    setState(() {
-                      transacao['valor'] = resultado['valor'];
-                      transacao['data'] = resultado['data'];
-                    });
+                    _transacaoController.atualizarTransacao(
+                      transacao,
+                      resultado['valor'],
+                      resultado['data'],
+                    );
                   }
                 },
                 backgroundColor: Colors.orange.shade400,
@@ -345,7 +331,7 @@ class _PrincipalState extends State<Principal> {
               SlidableAction(
                 onPressed: (context) {
                   setState(() {
-                    _transacoes.remove(transacao);
+                    _transacaoController.removerTransacao(transacao);
                   });
                 },
                 backgroundColor: Colors.red.shade400,
@@ -406,22 +392,35 @@ class _PrincipalState extends State<Principal> {
         children: [
           _buildDateSelector(),
           _buildStatColumn(
-              'Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
+              'Despesas',
+              _transacaoController
+                  .despesasDoMes(_dataSelecionada)
+                  .toStringAsFixed(2),
+              Colors.white,
               isSelected: _filtroAtual == 'Despesas', onTap: () {
             setState(() {
               _filtroAtual = 'Despesas';
             });
           }),
           _buildStatColumn(
-              'Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
+              'Receitas',
+              _transacaoController
+                  .receitasDoMes(_dataSelecionada)
+                  .toStringAsFixed(2),
+              Colors.white,
               isSelected: _filtroAtual == 'Receitas', onTap: () {
             setState(() {
               _filtroAtual = 'Receitas';
             });
           }),
           _buildStatColumn(
-              'Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
-              isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
+              'Saldo',
+              _transacaoController
+                  .saldoDoMes(_dataSelecionada)
+                  .toStringAsFixed(2),
+              Colors.white,
+              isBold: true,
+              isSelected: _filtroAtual == 'Saldo', onTap: () {
             setState(() {
               _filtroAtual = 'Saldo';
             });
