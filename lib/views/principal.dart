@@ -149,6 +149,11 @@ class _PrincipalState extends State<Principal> {
             ),
           ],
         ),
+        Graficos(
+          transacoes: _transacaoController.transacoes,
+          dataSelecionada: _dataSelecionada,
+          aoEscolherData: _escolherData,
+        ),
         const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
         const Center(child: Text('')),
         Relatorio(transacoes: _transacaoController.transacoes),
