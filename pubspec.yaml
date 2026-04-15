@@ -13,6 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_slidable: ^4.0.3
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

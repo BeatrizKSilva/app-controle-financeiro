@@ -64,7 +64,7 @@ class Opcoes extends StatelessWidget {
         _buildOpcaoItem(
           context,
           titulo: 'Editar Perfil',
-          subtitulo: 'Gerenciar email, senha e coonta',
+          subtitulo: 'Gerenciar email, senha e conta',
           icone: Icons.person_outline,
           cor: Colors.blue,
           onTap: () {
@@ -76,6 +76,7 @@ class Opcoes extends StatelessWidget {
             );
           },
         ),
+        const SizedBox(height: 12),
       ],
     );
   }

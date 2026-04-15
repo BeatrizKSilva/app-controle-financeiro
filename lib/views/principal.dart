@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
 import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 import 'package:vinta_financas/views/categoria.dart';
+import 'package:vinta_financas/views/graficos.dart';
 import 'package:vinta_financas/views/opcoes.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
@@ -25,18 +26,8 @@ class _PrincipalState extends State<Principal> {
 
   DateTime _dataSelecionada = DateTime.now();
   final List<String> _meses = const [
-    'Jan',
-    'Fev',
-    'Mar',
-    'Abr',
-    'Mai',
-    'Jun',
-    'Jul',
-    'Ago',
-    'Set',
-    'Out',
-    'Nov',
-    'Dez'
+    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
   ];
 
   double get _despesasDoMes {
@@ -155,15 +146,22 @@ class _PrincipalState extends State<Principal> {
             _buildResumoHeader(),
             Expanded(
               child: Container(
-                color: Colors.grey.shade100,
                 child: _buildListaTransacoes(),
               ),
             ),
           ],
         ),
-        const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
+        
+        Graficos(
+          transacoes: _transacoes,
+          dataSelecionada: _dataSelecionada,
+          aoEscolherData: _escolherData,
+        ),
+        
         const Center(child: Text('')),
+        
         Relatorio(transacoes: _transacoes),
+        
         Opcoes(
           receitaController: _receitaController,
           despesaController: _despesaController,
@@ -402,36 +400,33 @@ class _PrincipalState extends State<Principal> {
     return Container(
       color: const Color(0xFFF06292),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildDateSelector(),
-            _buildStatColumn(
-                'Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
-                isSelected: _filtroAtual == 'Despesas', onTap: () {
-              setState(() {
-                _filtroAtual = 'Despesas';
-              });
-            }),
-            _buildStatColumn(
-                'Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
-                isSelected: _filtroAtual == 'Receitas', onTap: () {
-              setState(() {
-                _filtroAtual = 'Receitas';
-              });
-            }),
-            _buildStatColumn(
-                'Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
-                isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
-              setState(() {
-                _filtroAtual = 'Saldo';
-              });
-            }),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildDateSelector(),
+          _buildStatColumn(
+              'Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
+              isSelected: _filtroAtual == 'Despesas', onTap: () {
+            setState(() {
+              _filtroAtual = 'Despesas';
+            });
+          }),
+          _buildStatColumn(
+              'Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
+              isSelected: _filtroAtual == 'Receitas', onTap: () {
+            setState(() {
+              _filtroAtual = 'Receitas';
+            });
+          }),
+          _buildStatColumn(
+              'Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
+              isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
+            setState(() {
+              _filtroAtual = 'Saldo';
+            });
+          }),
+        ],
       ),
     );
   }
