@@ -5,6 +5,7 @@ import 'package:vinta_financas/views/categoria.dart';
 import 'package:vinta_financas/views/opcoes.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
+import 'package:vinta_financas/views/relatorio.dart';
 
 class Principal extends StatefulWidget {
   const Principal({super.key});
@@ -162,7 +163,7 @@ class _PrincipalState extends State<Principal> {
         ),
         const Center(child: Text('Gráficos', style: TextStyle(fontSize: 24))),
         const Center(child: Text('')),
-        const Center(child: Text('Relatórios', style: TextStyle(fontSize: 24))),
+        Relatorio(transacoes: _transacoes),
         Opcoes(
           receitaController: _receitaController,
           despesaController: _despesaController,
@@ -401,33 +402,36 @@ class _PrincipalState extends State<Principal> {
     return Container(
       color: const Color(0xFFF06292),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildDateSelector(),
-          _buildStatColumn(
-              'Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
-              isSelected: _filtroAtual == 'Despesas', onTap: () {
-            setState(() {
-              _filtroAtual = 'Despesas';
-            });
-          }),
-          _buildStatColumn(
-              'Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
-              isSelected: _filtroAtual == 'Receitas', onTap: () {
-            setState(() {
-              _filtroAtual = 'Receitas';
-            });
-          }),
-          _buildStatColumn(
-              'Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
-              isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
-            setState(() {
-              _filtroAtual = 'Saldo';
-            });
-          }),
-        ],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildDateSelector(),
+            _buildStatColumn(
+                'Despesas', _despesasDoMes.toStringAsFixed(2), Colors.white,
+                isSelected: _filtroAtual == 'Despesas', onTap: () {
+              setState(() {
+                _filtroAtual = 'Despesas';
+              });
+            }),
+            _buildStatColumn(
+                'Receitas', _receitasDoMes.toStringAsFixed(2), Colors.white,
+                isSelected: _filtroAtual == 'Receitas', onTap: () {
+              setState(() {
+                _filtroAtual = 'Receitas';
+              });
+            }),
+            _buildStatColumn(
+                'Saldo', _saldoDoMes.toStringAsFixed(2), Colors.white,
+                isBold: true, isSelected: _filtroAtual == 'Saldo', onTap: () {
+              setState(() {
+                _filtroAtual = 'Saldo';
+              });
+            }),
+          ],
+        ),
       ),
     );
   }
