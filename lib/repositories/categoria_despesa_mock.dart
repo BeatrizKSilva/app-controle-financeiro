@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Categoria {
-  final String nome;
+  String nome;
   final IconData icone;
   final Color cor;
 
@@ -27,5 +27,9 @@ class CategoriaDespesaMock {
 
   void adicionarCategoria(String nome, IconData icone, Color cor) {
     _categorias.add(Categoria(nome: nome, icone: icone, cor: cor));
+  }
+
+  void editarCategoria(int index, String novoNome) {
+    _categorias[index].nome = novoNome;
   }
 }

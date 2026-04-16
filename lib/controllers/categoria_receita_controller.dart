@@ -20,4 +20,9 @@ class CategoriaReceitaController extends ChangeNotifier {
     _bancoCategorias.adicionarCategoria(nome, icone, cor);
     carregarCategorias();
   }
+
+  void editarCategoria(int index, String nome) {
+    _bancoCategorias.editarCategoria(index, nome);
+    carregarCategorias();
+  }
 }

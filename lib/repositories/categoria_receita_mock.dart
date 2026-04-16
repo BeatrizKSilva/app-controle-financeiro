@@ -17,4 +17,8 @@ class CategoriaReceitaMock {
   void adicionarCategoria(String nome, IconData icone, Color cor) {
     _categorias.add(Categoria(nome: nome, icone: icone, cor: cor));
   }
+
+  void editarCategoria(int index, String novoNome) {
+    _categorias[index].nome = novoNome;
+  }
 }

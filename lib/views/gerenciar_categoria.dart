@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class GerenciarCategorias extends StatefulWidget {
-
   final String tituloTela;
   final dynamic controller;
 
@@ -13,17 +12,13 @@ class GerenciarCategorias extends StatefulWidget {
 
   @override
   State<GerenciarCategorias> createState() => _GerenciarCategoriasState();
-
 }
 
 class _GerenciarCategoriasState extends State<GerenciarCategorias> {
-
   void _excluirCategoria(int index) {
-
     showDialog(
-
       context: context,
-      builder:(context) =>  AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Excluir Categoria'),
         content: const Text("Tem certeza que deseja excluir esta categoria?"),
         actions: [
@@ -44,7 +39,9 @@ class _GerenciarCategoriasState extends State<GerenciarCategorias> {
                 ),
               );
             },
-            child: const Text('Excluir', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: const Text('Excluir',
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -52,9 +49,9 @@ class _GerenciarCategoriasState extends State<GerenciarCategorias> {
   }
 
   void _editarCategoria(int index) {
-   
     final categoria = widget.controller.categorias[index];
-    TextEditingController nomeController = TextEditingController(text: categoria.nome);
+    TextEditingController nomeController =
+        TextEditingController(text: categoria.nome);
 
     showDialog(
       context: context,
@@ -72,8 +69,19 @@ class _GerenciarCategoriasState extends State<GerenciarCategorias> {
           ),
           TextButton(
             onPressed: () {
-              setState((){
-                categoria.nome = nomeController.text;
+              final novoNome = nomeController.text.trim();
+              if (novoNome.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('O nome da categoria não pode ficar vazio'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+
+              setState(() {
+                widget.controller.editarCategoria(index, novoNome);
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -83,8 +91,9 @@ class _GerenciarCategoriasState extends State<GerenciarCategorias> {
                 ),
               );
             },
-            child: Text('Salvar', style: TextStyle(color: Colors.pink.shade300, fontWeight: FontWeight.bold)),
-
+            child: Text('Salvar',
+                style: TextStyle(
+                    color: Colors.pink.shade300, fontWeight: FontWeight.bold)),
           )
         ],
       ),
@@ -101,7 +110,8 @@ class _GerenciarCategoriasState extends State<GerenciarCategorias> {
       ),
       body: widget.controller.categorias.isEmpty
           ? Center(
-              child: Text('Nenhuma categoria encontrada.', style: TextStyle(color: Colors.grey.shade600)),
+              child: Text('Nenhuma categoria encontrada.',
+                  style: TextStyle(color: Colors.grey.shade600)),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -111,13 +121,15 @@ class _GerenciarCategoriasState extends State<GerenciarCategorias> {
                 return Card(
                   elevation: 2,
                   margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: categoria.cor,
                       child: Icon(categoria.icone, color: Colors.white),
                     ),
-                    title: Text(categoria.nome, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(categoria.nome,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
