@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
+import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 import 'package:vinta_financas/views/gerenciar_categoria_view.dart';
 import 'package:vinta_financas/views/editar_perfil_view.dart';
 
 class Opcoes extends StatelessWidget {
-  final dynamic receitaController;
-  final dynamic despesaController;
-
-  const Opcoes({
-    super.key,
-    required this.receitaController,
-    required this.despesaController,
-  });
+  const Opcoes({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +29,9 @@ class Opcoes extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => GerenciarCategorias(
+                builder: (context) => GerenciarCategoriasView(
                   tituloTela: 'Receitas',
-                  controller: receitaController,
+                  controller: context.read<CategoriaReceitaController>(),
                 ),
               ),
             );
@@ -52,9 +48,9 @@ class Opcoes extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => GerenciarCategorias(
+                builder: (context) => GerenciarCategoriasView(
                   tituloTela: 'Despesas',
-                  controller: despesaController,
+                  controller: context.read<CategoriaDespesaController>(),
                 ),
               ),
             );
@@ -71,7 +67,7 @@ class Opcoes extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const EditarPerfil(),
+                builder: (context) => const EditarPerfilView(),
               ),
             );
           },
@@ -97,9 +93,7 @@ class Opcoes extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: cor.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
+              color: cor.withValues(alpha: 0.1), shape: BoxShape.circle),
           child: Icon(icone, color: cor),
         ),
         title: Text(titulo,

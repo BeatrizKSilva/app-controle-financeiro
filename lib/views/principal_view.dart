@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
-import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
+import 'package:provider/provider.dart';
 import 'package:vinta_financas/controllers/transacao_controller.dart';
 import 'package:vinta_financas/views/categoria_view.dart';
 import 'package:vinta_financas/views/graficos_view.dart';
@@ -9,24 +8,18 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
 import 'package:vinta_financas/views/relatorio_view.dart';
 
-class Principal extends StatefulWidget {
-  const Principal({super.key});
+class PrincipalView extends StatefulWidget {
+  const PrincipalView({super.key});
 
   @override
-  State<Principal> createState() => _PrincipalState();
+  State<PrincipalView> createState() => _PrincipalViewState();
 }
 
-class _PrincipalState extends State<Principal> {
+class _PrincipalViewState extends State<PrincipalView> {
   int _selectedIndex = 0;
   String _filtroAtual = 'Todos';
-
-  final CategoriaReceitaController _receitaController =
-      CategoriaReceitaController();
-  final CategoriaDespesaController _despesaController =
-      CategoriaDespesaController();
-  final TransacaoController _transacaoController = TransacaoController();
-
   DateTime _dataSelecionada = DateTime.now();
+
   final List<String> _meses = const [
     'Jan',
     'Fev',
@@ -41,14 +34,6 @@ class _PrincipalState extends State<Principal> {
     'Nov',
     'Dez'
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _transacaoController.addListener(() {
-      if (mounted) setState(() {});
-    });
-  }
 
   Future<void> _escolherData(BuildContext context) async {
     int anoTemporario = _dataSelecionada.year;
@@ -67,18 +52,12 @@ class _PrincipalState extends State<Principal> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios, size: 18),
                     onPressed: () => setStateDialog(() => anoTemporario--),
-                    highlightColor: Colors.pink.shade100,
-                    splashColor: Colors.pink.shade200,
                   ),
-                  Text(
-                    '$anoTemporario',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  Text('$anoTemporario',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.arrow_forward_ios, size: 18),
                     onPressed: () => setStateDialog(() => anoTemporario++),
-                    highlightColor: Colors.pink.shade100,
-                    splashColor: Colors.pink.shade200,
                   ),
                 ],
               ),
@@ -96,11 +75,8 @@ class _PrincipalState extends State<Principal> {
                         (_dataSelecionada.year == anoTemporario);
 
                     return InkWell(
-                      onTap: () {
-                        Navigator.pop(
-                            context, DateTime(anoTemporario, index + 1));
-                      },
-                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => Navigator.pop(
+                          context, DateTime(anoTemporario, index + 1)),
                       child: Container(
                         margin: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
@@ -117,7 +93,6 @@ class _PrincipalState extends State<Principal> {
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
-                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -138,94 +113,61 @@ class _PrincipalState extends State<Principal> {
     }
   }
 
-  List<Widget> get _pages => [
-        Column(
-          children: [
-            _buildResumoHeader(),
-            Expanded(
-              child: Container(
-                child: _buildListaTransacoes(),
-              ),
-            ),
-          ],
-        ),
-        Graficos(
-          transacoes: _transacaoController.transacoes,
-          dataSelecionada: _dataSelecionada,
-          aoEscolherData: _escolherData,
-        ),
-        const Center(child: Text('')),
-        Relatorio(transacoes: _transacaoController.transacoes),
-        Opcoes(
-          receitaController: _receitaController,
-          despesaController: _despesaController,
-        ),
-      ];
-
-  void _onItemTapped(int index) {
-    if (index == 2) return;
-
-    setState(() {
-      _selectedIndex = index;
-    });
+  List<Widget> _getPages(TransacaoController transacaoController) {
+    return [
+      Column(
+        children: [
+          _buildResumoHeader(transacaoController),
+          Expanded(child: _buildListaTransacoes(transacaoController)),
+        ],
+      ),
+      GraficosView(
+        dataSelecionada: _dataSelecionada,
+        aoEscolherData: _escolherData,
+      ),
+      const Center(child: Text('')),
+      const Relatorio(),
+      const Opcoes(),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
+    final transacaoController = context.watch<TransacaoController>();
+
+    final pages = _getPages(transacaoController);
+
     return Scaffold(
-      //barra superior
       appBar: AppBar(
         title: const Text('Minhas Finanças'),
         backgroundColor: Colors.pink.shade300,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-
-      //corpo da tela
-      body: _pages[_selectedIndex],
-
-      //botão flutuante
+      body: pages[_selectedIndex],
       floatingActionButton: Transform.translate(
         offset: const Offset(0, 15),
         child: FloatingActionButton(
           onPressed: () async {
-            if (_filtroAtual == 'Receitas') {
-              final resultado = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Categoria(
-                    tituloTela: "Nova Receita",
-                    controller: _receitaController,
-                  ),
-                ),
-              );
+            final bool isReceitaFiltro = _filtroAtual == 'Receitas';
 
-              if (resultado != null && resultado is Map) {
-                _transacaoController.adicionarTransacao({
-                  'tipo': 'receita',
-                  'valor': resultado['valor'],
-                  'categoria': resultado['categoria'],
-                  'data': resultado['data'],
-                });
-              }
-            } else {
-              final resultado = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Categoria(
-                    tituloTela: "Nova Despesa",
-                    controller: _despesaController,
-                  ),
+            final resultado = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Categoria(
+                  tituloTela: isReceitaFiltro ? "Nova Receita" : "Nova Despesa",
+                  isReceita: isReceitaFiltro,
                 ),
-              );
-              if (resultado != null && resultado is Map) {
-                _transacaoController.adicionarTransacao({
-                  'tipo': 'despesa',
-                  'valor': resultado['valor'],
-                  'categoria': resultado['categoria'],
-                  'data': resultado['data'],
-                });
-              }
+              ),
+            );
+
+            if (resultado != null && resultado is Map<String, dynamic>) {
+              transacaoController.adicionarTransacao({
+                'tipo': isReceitaFiltro ? 'receita' : 'despesa',
+                'valor': resultado['valor'],
+                'categoria': resultado['categoria'],
+                'data': resultado['data'],
+              });
             }
           },
           backgroundColor: Colors.pink.shade300,
@@ -234,27 +176,20 @@ class _PrincipalState extends State<Principal> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      //barra inferior
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white, // fundo branco
-        selectedItemColor: Colors.pink.shade300, // icone clicado fica rosa
-        unselectedItemColor: Colors.grey, //icone solto fica cinza
+        selectedItemColor: Colors.pink.shade300,
+        unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-
-        selectedFontSize: 13.0, //tamanho da fonte do item selecionado
-        unselectedFontSize: 11.0, //tamanho da fonte do item não selecionado
-
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const <BottomNavigationBarItem>[
+        onTap: (index) {
+          if (index != 2) setState(() => _selectedIndex = index);
+        },
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
           BottomNavigationBarItem(
               icon: Icon(Icons.show_chart), label: 'Gráficos'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add, color: Colors.transparent),
-            label: '',
-          ),
+              icon: Icon(Icons.add, color: Colors.transparent), label: ''),
           BottomNavigationBarItem(
               icon: Icon(Icons.insert_chart_outlined), label: 'Relatórios'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Opções'),
@@ -263,9 +198,9 @@ class _PrincipalState extends State<Principal> {
     );
   }
 
-  Widget _buildListaTransacoes() {
+  Widget _buildListaTransacoes(TransacaoController controller) {
     List<Map<String, dynamic>> transacoesFiltradas =
-        _transacaoController.transacoes.where((t) {
+        controller.transacoes.where((t) {
       return t['data'].month == _dataSelecionada.month &&
           t['data'].year == _dataSelecionada.year;
     }).toList();
@@ -286,12 +221,8 @@ class _PrincipalState extends State<Principal> {
             Icon(Icons.assignment_outlined,
                 size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 10),
-            Text(
-              _filtroAtual == 'Todos' || _filtroAtual == 'Saldo'
-                  ? 'Nenhum registro no mês selecionado'
-                  : 'Não há registros de $_filtroAtual neste mês',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-            ),
+            Text('Nenhum registro encontrado',
+                style: TextStyle(color: Colors.grey.shade600)),
           ],
         ),
       );
@@ -315,69 +246,42 @@ class _PrincipalState extends State<Principal> {
                   final resultado = await mostrarPainelValor(
                     context: context,
                     titulo: 'Editar valor',
-                    corBotao: Colors.orange,
                     valorInicial: transacao['valor'],
                     dataInicial: transacao['data'],
+                    corBotao: Colors.orange,
                   );
                   if (resultado != null) {
-                    _transacaoController.atualizarTransacao(
-                      transacao,
-                      resultado['valor'],
-                      resultado['data'],
-                    );
+                    controller.atualizarTransacao(
+                        transacao, resultado['valor'], resultado['data']);
                   }
                 },
-                backgroundColor: Colors.orange.shade400,
-                foregroundColor: Colors.white,
+                backgroundColor: Colors.orange,
                 icon: Icons.edit,
                 label: 'Editar',
               ),
               SlidableAction(
-                onPressed: (context) {
-                  setState(() {
-                    _transacaoController.removerTransacao(transacao);
-                  });
-                },
-                backgroundColor: Colors.red.shade400,
-                foregroundColor: Colors.white,
+                onPressed: (context) => controller.removerTransacao(transacao),
+                backgroundColor: Colors.red,
                 icon: Icons.delete,
                 label: 'Excluir',
               ),
             ],
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-              ),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: categoria.cor,
+              child: Icon(categoria.icone, color: Colors.white),
             ),
-            child: ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              leading: Container(
-                height: 45,
-                width: 45,
-                decoration:
-                    BoxDecoration(color: categoria.cor, shape: BoxShape.circle),
-                child: Icon(categoria.icone, color: Colors.white),
-              ),
-              title: Text(
-                categoria.nome,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              subtitle: Text(
-                "${transacao['data'].day}/${transacao['data'].month}/${transacao['data'].year}",
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-              trailing: Text(
-                '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: isReceita ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+            title: Text(categoria.nome,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(
+                "${transacao['data'].day}/${transacao['data'].month}/${transacao['data'].year}"),
+            trailing: Text(
+              '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
+              style: TextStyle(
+                color: isReceita ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
           ),
@@ -386,49 +290,27 @@ class _PrincipalState extends State<Principal> {
     );
   }
 
-  Widget _buildResumoHeader() {
+  Widget _buildResumoHeader(TransacaoController controller) {
     return Container(
       color: const Color(0xFFF06292),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildDateSelector(),
-          _buildStatColumn(
-              'Despesas',
-              _transacaoController
-                  .despesasDoMes(_dataSelecionada)
-                  .toStringAsFixed(2),
-              Colors.white,
-              isSelected: _filtroAtual == 'Despesas', onTap: () {
-            setState(() {
-              _filtroAtual = 'Despesas';
-            });
-          }),
-          _buildStatColumn(
-              'Receitas',
-              _transacaoController
-                  .receitasDoMes(_dataSelecionada)
-                  .toStringAsFixed(2),
-              Colors.white,
-              isSelected: _filtroAtual == 'Receitas', onTap: () {
-            setState(() {
-              _filtroAtual = 'Receitas';
-            });
-          }),
-          _buildStatColumn(
-              'Saldo',
-              _transacaoController
-                  .saldoDoMes(_dataSelecionada)
-                  .toStringAsFixed(2),
-              Colors.white,
+          _buildStatColumn('Despesas',
+              controller.despesasDoMes(_dataSelecionada).toStringAsFixed(2),
+              isSelected: _filtroAtual == 'Despesas',
+              onTap: () => setState(() => _filtroAtual = 'Despesas')),
+          _buildStatColumn('Receitas',
+              controller.receitasDoMes(_dataSelecionada).toStringAsFixed(2),
+              isSelected: _filtroAtual == 'Receitas',
+              onTap: () => setState(() => _filtroAtual = 'Receitas')),
+          _buildStatColumn('Saldo',
+              controller.saldoDoMes(_dataSelecionada).toStringAsFixed(2),
               isBold: true,
-              isSelected: _filtroAtual == 'Saldo', onTap: () {
-            setState(() {
-              _filtroAtual = 'Saldo';
-            });
-          }),
+              isSelected: _filtroAtual == 'Saldo',
+              onTap: () => setState(() => _filtroAtual = 'Saldo')),
         ],
       ),
     );
@@ -437,65 +319,47 @@ class _PrincipalState extends State<Principal> {
   Widget _buildDateSelector() {
     return InkWell(
       onTap: () => _escolherData(context),
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${_dataSelecionada.year}',
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
-            ),
-            Row(
-              children: [
-                Text(
-                  _meses[_dataSelecionada.month - 1],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${_dataSelecionada.year}',
+              style: const TextStyle(color: Colors.white70, fontSize: 12)),
+          Row(
+            children: [
+              Text(_meses[_dataSelecionada.month - 1],
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold),
-                ),
-                const Icon(Icons.keyboard_arrow_down,
-                    color: Colors.white, size: 20),
-              ],
-            ),
-          ],
-        ),
+                      fontWeight: FontWeight.bold)),
+              const Icon(Icons.keyboard_arrow_down,
+                  color: Colors.white, size: 20),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildStatColumn(String title, String value, Color color,
+  Widget _buildStatColumn(String title, String value,
       {bool isBold = false, bool isSelected = false, VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.black.withValues(alpha: 0.15)
-              : Colors.transparent,
+          color: isSelected ? Colors.black12 : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           children: [
-            Text(
-              title,
-              style:
-                  TextStyle(color: color.withValues(alpha: 0.8), fontSize: 12),
-            ),
+            Text(title,
+                style: const TextStyle(color: Colors.white70, fontSize: 12)),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontSize: 16,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
+            Text(value,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
           ],
         ),
       ),

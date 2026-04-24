@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:vinta_financas/repositories/user_mock.dart';
 
-class Cadastro extends StatefulWidget {
-  const Cadastro({super.key});
+class CadastroView extends StatefulWidget {
+  const CadastroView({super.key});
 
   @override
-  State<Cadastro> createState() => _CadastroState();
+  State<CadastroView> createState() => _CadastroViewState();
 }
 
-class _CadastroState extends State<Cadastro> {
+class _CadastroViewState extends State<CadastroView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();

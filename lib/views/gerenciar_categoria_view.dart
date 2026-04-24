@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 
-class GerenciarCategorias extends StatefulWidget {
+class GerenciarCategoriasView extends StatefulWidget {
   final String tituloTela;
   final dynamic controller;
 
-  const GerenciarCategorias({
+  const GerenciarCategoriasView({
     super.key,
     required this.tituloTela,
     required this.controller,
   });
 
   @override
-  State<GerenciarCategorias> createState() => _GerenciarCategoriasState();
+  State<GerenciarCategoriasView> createState() =>
+      _GerenciarCategoriasViewState();
 }
 
-class _GerenciarCategoriasState extends State<GerenciarCategorias> {
+class _GerenciarCategoriasViewState extends State<GerenciarCategoriasView> {
   void _excluirCategoria(int index) {
     showDialog(
       context: context,

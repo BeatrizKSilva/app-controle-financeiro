@@ -82,7 +82,7 @@ class _LoginState extends State<Login> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const Principal(),
+                          builder: (context) => const PrincipalView(),
                         ),
                       );
                     } else {
@@ -105,7 +105,8 @@ class _LoginState extends State<Login> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Cadastro()),
+                    MaterialPageRoute(
+                        builder: (context) => const CadastroView()),
                   );
                 },
                 child: const Text('Não tem conta? Cadastre-se'),

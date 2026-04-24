@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:vinta_financas/repositories/user_mock.dart';
 import 'package:vinta_financas/views/login_view.dart';
 
-class EditarPerfil extends StatefulWidget {
-  const EditarPerfil({super.key});
+class EditarPerfilView extends StatefulWidget {
+  const EditarPerfilView({super.key});
 
   @override
-  State<EditarPerfil> createState() => _EditarPerfilState();
+  State<EditarPerfilView> createState() => _EditarPerfilViewState();
 }
 
-class _EditarPerfilState extends State<EditarPerfil> {
+class _EditarPerfilViewState extends State<EditarPerfilView> {
   late TextEditingController _emailController;
   final TextEditingController _senhaAntigaController = TextEditingController();
   final TextEditingController _senhaNovaController = TextEditingController();

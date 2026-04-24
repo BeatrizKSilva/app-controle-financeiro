@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vinta_financas/controllers/transacao_controller.dart';
 
 class Relatorio extends StatefulWidget {
-  final List<Map<String, dynamic>> transacoes;
-
-  const Relatorio({super.key, required this.transacoes});
+  const Relatorio({super.key});
 
   @override
   State<Relatorio> createState() => _RelatorioState();
@@ -11,7 +11,6 @@ class Relatorio extends StatefulWidget {
 
 class _RelatorioState extends State<Relatorio> {
   String _anoSelecionado = DateTime.now().year.toString();
-  List<String> _opcoesDeFiltro = ['Todos'];
 
   final List<String> _nomeMeses = [
     'JAN',
@@ -27,41 +26,25 @@ class _RelatorioState extends State<Relatorio> {
     'NOV',
     'DEZ'
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _carregarAnosDisponiveis();
-  }
-
-  void _carregarAnosDisponiveis() {
+  List<String> _getAnosDisponiveis(List<Map<String, dynamic>> transacoes) {
     Set<String> anos = {'Todos'};
-    for (var transacao in widget.transacoes) {
-      anos.add(transacao['data'].year.toString());
+    for (var t in transacoes) {
+      anos.add(t['data'].year.toString());
     }
-    setState(() {
-      _opcoesDeFiltro = anos.toList();
-      _opcoesDeFiltro.sort((a, b) => b.compareTo(a));
-      _opcoesDeFiltro.remove('Todos');
-      _opcoesDeFiltro.insert(0, 'Todos');
-
-      if (!_opcoesDeFiltro.contains(_anoSelecionado)) {
-        _anoSelecionado = 'Todos';
-      }
-    });
+    List<String> listaAnos = anos.toList();
+    listaAnos.sort((a, b) => b.compareTo(a));
+    listaAnos.remove('Todos');
+    listaAnos.insert(0, 'Todos');
+    return listaAnos;
   }
 
-  List<Map<String, dynamic>> get _dadosMensais {
+  List<Map<String, dynamic>> _getDadosMensais(
+      List<Map<String, dynamic>> transacoes) {
     List<Map<String, dynamic>> resumo = List.generate(12, (index) {
-      return {
-        'mes': index + 1,
-        'receita': 0.0,
-        'despesa': 0.0,
-        'saldo': 0.0,
-      };
+      return {'mes': index + 1, 'receita': 0.0, 'despesa': 0.0, 'saldo': 0.0};
     });
 
-    Iterable<Map<String, dynamic>> transacoesFiltradas = widget.transacoes;
+    Iterable<Map<String, dynamic>> transacoesFiltradas = transacoes;
     if (_anoSelecionado != 'Todos') {
       transacoesFiltradas = transacoesFiltradas
           .where((t) => t['data'].year.toString() == _anoSelecionado);
@@ -83,7 +66,13 @@ class _RelatorioState extends State<Relatorio> {
 
   @override
   Widget build(BuildContext context) {
-    final dadosProntos = _dadosMensais;
+    final transacoes = context.watch<TransacaoController>().transacoes;
+
+    final opcoesDeFiltro = _getAnosDisponiveis(transacoes);
+    if (!opcoesDeFiltro.contains(_anoSelecionado)) {
+      _anoSelecionado = 'Todos'; // Reset de segurança
+    }
+    final dadosProntos = _getDadosMensais(transacoes);
 
     return Column(
       children: [
@@ -93,13 +82,11 @@ class _RelatorioState extends State<Relatorio> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Balanço Mensal',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
-              ),
+              const Text('Balanço Mensal',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87)),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -123,12 +110,10 @@ class _RelatorioState extends State<Relatorio> {
                         });
                       }
                     },
-                    items: _opcoesDeFiltro
+                    items: opcoesDeFiltro
                         .map<DropdownMenuItem<String>>((String valor) {
                       return DropdownMenuItem<String>(
-                        value: valor,
-                        child: Text(valor),
-                      );
+                          value: valor, child: Text(valor));
                     }).toList(),
                   ),
                 ),
@@ -175,13 +160,10 @@ class _RelatorioState extends State<Relatorio> {
             itemCount: dadosProntos.length,
             itemBuilder: (context, index) {
               final mesCalculado = dadosProntos[index];
-              if (mesCalculado['receita'] == 0 &&
-                  mesCalculado['despesa'] == 0) {
+              if (mesCalculado['receita'] == 0 && mesCalculado['despesa'] == 0)
                 return const SizedBox.shrink();
-              }
 
-              String nomeMes =
-                  _nomeMeses[mesCalculado['mes'] - 1]; // Pega o nome na lista
+              String nomeMes = _nomeMeses[mesCalculado['mes'] - 1];
               double receita = mesCalculado['receita'];
               double despesa = mesCalculado['despesa'];
               double saldo = mesCalculado['saldo'];
@@ -193,64 +175,49 @@ class _RelatorioState extends State<Relatorio> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border:
-                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
-                ),
+                    color: Colors.white,
+                    border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade200))),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      flex: 2,
-                      child: Text(
-                        nomeMes,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ),
+                        flex: 2,
+                        child: Text(nomeMes,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 14))),
                     Expanded(
-                      flex: 3,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          '+ R\$ ${receita.toStringAsFixed(2)}',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                              color: Colors.green, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
+                        flex: 3,
+                        child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text('+ R\$ ${receita.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w600)))),
                     Expanded(
-                      flex: 3,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          '- R\$ ${despesa.toStringAsFixed(2)}',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                              color: Colors.red, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
+                        flex: 3,
+                        child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text('- R\$ ${despesa.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w600)))),
                     Expanded(
-                      flex: 3,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          textoSaldo,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: saldo >= 0
-                                ? Colors.blue.shade700
-                                : Colors.red.shade700,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
+                        flex: 3,
+                        child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(textoSaldo,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                    color: saldo >= 0
+                                        ? Colors.blue.shade700
+                                        : Colors.red.shade700,
+                                    fontWeight: FontWeight.bold)))),
                   ],
                 ),
               );

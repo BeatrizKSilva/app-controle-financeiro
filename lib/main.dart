@@ -1,9 +1,24 @@
+import 'package:provider/provider.dart';
+import 'package:vinta_financas/controllers/transacao_controller.dart';
+import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
+import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'views/login_view.dart';
 
 void main() {
-  runApp(const VintaApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => TransacaoController()),
+        ChangeNotifierProvider(
+            create: (context) => CategoriaDespesaController()),
+        ChangeNotifierProvider(
+            create: (context) => CategoriaReceitaController()),
+      ],
+      child: const VintaApp(),
+    ),
+  );
 }
 
 class VintaApp extends StatelessWidget {

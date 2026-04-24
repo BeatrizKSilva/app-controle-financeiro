@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
+import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
+import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
 
 class Categoria extends StatefulWidget {
   final String tituloTela;
-  final dynamic controller;
+  final bool isReceita;
 
-  const Categoria(
-      {super.key, required this.tituloTela, required this.controller});
+  const Categoria({
+    super.key,
+    required this.tituloTela,
+    required this.isReceita,
+  });
 
   @override
   State<Categoria> createState() => _CategoriaState();
@@ -34,15 +40,7 @@ class _CategoriaState extends State<Categoria> {
     Colors.brown,
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(() {
-      if (mounted) setState(() {});
-    });
-  }
-
-  void _mostrarNovacategoria(BuildContext context) {
+  void _mostrarNovacategoria(BuildContext context, dynamic controllerAtivo) {
     TextEditingController nomeController = TextEditingController();
     IconData iconeSelecionado = _opcoesDeIcones[0];
     Color corSelecionada = _opcoesDeCores[0];
@@ -60,9 +58,8 @@ class _CategoriaState extends State<Categoria> {
                   children: [
                     TextField(
                       controller: nomeController,
-                      decoration: const InputDecoration(
-                        hintText: "Nome da Categoria",
-                      ),
+                      decoration:
+                          const InputDecoration(hintText: "Nome da Categoria"),
                       autofocus: true,
                     ),
                     const SizedBox(height: 20),
@@ -76,11 +73,8 @@ class _CategoriaState extends State<Categoria> {
                         final bool isSelecionado =
                             iconeAtual == iconeSelecionado;
                         return GestureDetector(
-                          onTap: () {
-                            setStateDialog(() {
-                              iconeSelecionado = iconeAtual;
-                            });
-                          },
+                          onTap: () => setStateDialog(
+                              () => iconeSelecionado = iconeAtual),
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
@@ -130,14 +124,13 @@ class _CategoriaState extends State<Categoria> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancelar',
-                      style: TextStyle(color: Colors.grey)),
-                ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancelar',
+                        style: TextStyle(color: Colors.grey))),
                 TextButton(
                   onPressed: () {
                     if (nomeController.text.isNotEmpty) {
-                      widget.controller.adicionarCategoria(nomeController.text,
+                      controllerAtivo.adicionarCategoria(nomeController.text,
                           iconeSelecionado, corSelecionada);
                       Navigator.pop(context);
                     }
@@ -159,19 +152,22 @@ class _CategoriaState extends State<Categoria> {
         titulo: 'Inserir Valor',
         corBotao: Colors.pink.shade300);
 
-    if (resultado != null) {
-      if (context.mounted) {
-        Navigator.pop(context, {
-          'valor': resultado['valor'],
-          'categoria': categoria,
-          'data': resultado['data'],
-        });
-      }
+    if (resultado != null && context.mounted) {
+      Navigator.pop(context, {
+        'valor': resultado['valor'],
+        'categoria': categoria,
+        'data': resultado['data'],
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Busca o controller correto baseado no booleano
+    final dynamic controller = widget.isReceita
+        ? context.watch<CategoriaReceitaController>()
+        : context.watch<CategoriaDespesaController>();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.tituloTela),
@@ -181,9 +177,7 @@ class _CategoriaState extends State<Categoria> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              _mostrarNovacategoria(context);
-            },
+            onPressed: () => _mostrarNovacategoria(context, controller),
           )
         ],
       ),
@@ -192,13 +186,11 @@ class _CategoriaState extends State<Categoria> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Selecione a Categoria',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
+            const Text('Selecione a Categoria',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black)),
             const SizedBox(height: 20),
             Expanded(
               child: GridView.builder(
@@ -208,27 +200,20 @@ class _CategoriaState extends State<Categoria> {
                   mainAxisSpacing: 20,
                   childAspectRatio: 0.75,
                 ),
-                itemCount: widget.controller.categorias.length,
+                itemCount: controller.categorias.length,
                 itemBuilder: (context, index) {
-                  final categoria = widget.controller.categorias[index];
+                  final categoria = controller.categorias[index];
                   return GestureDetector(
-                    onTap: () {
-                      _insercaoValor(context, categoria);
-                    },
+                    onTap: () => _insercaoValor(context, categoria),
                     child: Column(
                       children: [
                         Container(
                           height: 60,
                           width: 60,
                           decoration: BoxDecoration(
-                            color: categoria.cor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            categoria.icone,
-                            color: Colors.white,
-                            size: 25,
-                          ),
+                              color: categoria.cor, shape: BoxShape.circle),
+                          child: Icon(categoria.icone,
+                              color: Colors.white, size: 25),
                         ),
                         const SizedBox(height: 10),
                         Text(
