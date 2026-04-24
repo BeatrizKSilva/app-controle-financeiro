@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'views/login.dart';
+import 'views/login_view.dart';
 
 void main() {
   runApp(const VintaApp());

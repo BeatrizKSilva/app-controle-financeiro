@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vinta_financas/views/gerenciar_categoria.dart';
-import 'package:vinta_financas/views/editar_perfil.dart';
+import 'package:vinta_financas/views/gerenciar_categoria_view.dart';
+import 'package:vinta_financas/views/editar_perfil_view.dart';
 
 class Opcoes extends StatelessWidget {
   final dynamic receitaController;

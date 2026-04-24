@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinta_financas/repositories/user_mock.dart';
-import 'package:vinta_financas/views/login.dart';
+import 'package:vinta_financas/views/login_view.dart';
 
 class EditarPerfil extends StatefulWidget {
   const EditarPerfil({super.key});

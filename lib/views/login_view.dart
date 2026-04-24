@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vinta_financas/controllers/login_controller.dart';
-import 'package:vinta_financas/views/cadastro.dart';
-import 'package:vinta_financas/views/principal.dart';
+import 'package:vinta_financas/views/cadastro_view.dart';
+import 'package:vinta_financas/views/principal_view.dart';
 import 'package:vinta_financas/repositories/user_mock.dart';
 
 class Login extends StatefulWidget {

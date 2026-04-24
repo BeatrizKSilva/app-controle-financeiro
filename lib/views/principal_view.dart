@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
 import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 import 'package:vinta_financas/controllers/transacao_controller.dart';
-import 'package:vinta_financas/views/categoria.dart';
-import 'package:vinta_financas/views/graficos.dart';
-import 'package:vinta_financas/views/opcoes.dart';
+import 'package:vinta_financas/views/categoria_view.dart';
+import 'package:vinta_financas/views/graficos_view.dart';
+import 'package:vinta_financas/views/opcoes_view.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
-import 'package:vinta_financas/views/relatorio.dart';
+import 'package:vinta_financas/views/relatorio_view.dart';
 
 class Principal extends StatefulWidget {
   const Principal({super.key});
