@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:vinta_financas/models/categoria.dart'; 
 import 'package:vinta_financas/repositories/categoria_receita_mock.dart';
-import 'package:vinta_financas/repositories/categoria_despesa_mock.dart';
 
 class CategoriaReceitaController extends ChangeNotifier {
   final CategoriaReceitaMock _bancoCategorias = CategoriaReceitaMock();

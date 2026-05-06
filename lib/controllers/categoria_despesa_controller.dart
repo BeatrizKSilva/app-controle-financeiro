@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vinta_financas/models/categoria.dart';
 import 'package:vinta_financas/repositories/categoria_despesa_mock.dart';
 
 class CategoriaDespesaController extends ChangeNotifier {
