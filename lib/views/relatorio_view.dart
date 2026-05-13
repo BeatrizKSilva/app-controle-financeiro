@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vinta_financas/controllers/transacao_controller.dart';
+import 'package:vinta_financas/models/transacao.dart';
 
 class Relatorio extends StatefulWidget {
   const Relatorio({super.key});
@@ -26,10 +27,10 @@ class _RelatorioState extends State<Relatorio> {
     'NOV',
     'DEZ'
   ];
-  List<String> _getAnosDisponiveis(List<Map<String, dynamic>> transacoes) {
+  List<String> _getAnosDisponiveis(List<Transacao> transacoes) {
     Set<String> anos = {'Todos'};
     for (var t in transacoes) {
-      anos.add(t['data'].year.toString());
+      anos.add(t.data.year.toString());
     }
     List<String> listaAnos = anos.toList();
     listaAnos.sort((a, b) => b.compareTo(a));
@@ -38,22 +39,21 @@ class _RelatorioState extends State<Relatorio> {
     return listaAnos;
   }
 
-  List<Map<String, dynamic>> _getDadosMensais(
-      List<Map<String, dynamic>> transacoes) {
+  List<Map<String, dynamic>> _getDadosMensais(List<Transacao> transacoes) {
     List<Map<String, dynamic>> resumo = List.generate(12, (index) {
       return {'mes': index + 1, 'receita': 0.0, 'despesa': 0.0, 'saldo': 0.0};
     });
 
-    Iterable<Map<String, dynamic>> transacoesFiltradas = transacoes;
+    Iterable<Transacao> transacoesFiltradas = transacoes;
     if (_anoSelecionado != 'Todos') {
       transacoesFiltradas = transacoesFiltradas
-          .where((t) => t['data'].year.toString() == _anoSelecionado);
+          .where((t) => t.data.year.toString() == _anoSelecionado);
     }
     for (var t in transacoesFiltradas) {
-      int indiceMes = t['data'].month - 1;
-      double valor = t['valor'];
+      int indiceMes = t.data.month - 1;
+      double valor = t.valor;
 
-      if (t['tipo'] == 'receita') {
+      if (t.tipo == 'receita') {
         resumo[indiceMes]['receita'] += valor;
         resumo[indiceMes]['saldo'] += valor;
       } else {

@@ -1,44 +1,99 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/transacao.dart';
 
 class TransacaoController extends ChangeNotifier {
-  final List<Map<String, dynamic>> _transacoes = [];
+  List<Transacao> _transacoes = [];
+  List<Transacao> get transacoes => _transacoes;
 
-  List<Map<String, dynamic>> get transacoes => _transacoes;
-
-  void adicionarTransacao(Map<String, dynamic> novaTransacao) {
-    _transacoes.add(novaTransacao);
-    notifyListeners(); // O megafone! Avisa a tela que algo mudou.
+  TransacaoController() {
+    _iniciarBanco('usuario_teste_123');
   }
 
-  void removerTransacao(Map<String, dynamic> transacao) {
-    _transacoes.remove(transacao);
-    notifyListeners();
+  void _iniciarBanco(String uid) {
+    // final usuarioAtual = FirebaseAuth.instance.currentUser;
+    // if (usuarioAtual == null) return;
+
+    FirebaseFirestore.instance
+        .collection('usuarios')
+        // .doc(usuarioAtual.uid)
+        .doc(uid)
+        .collection('transacoes')
+        .snapshots()
+        .listen((snapshot) {
+      _transacoes = snapshot.docs.map((documento) {
+        final dadosFirebase = documento.data();
+        return Transacao.fromMap(dadosFirebase, documento.id);
+      }).toList();
+      notifyListeners();
+    });
   }
 
-  void atualizarTransacao(Map<String, dynamic> transacaoOriginal,
-      double novoValor, DateTime novaData) {
-    // Como os Maps são por referência, se mudarmos aqui, muda na lista toda!
-    transacaoOriginal['valor'] = novoValor;
-    transacaoOriginal['data'] = novaData;
-    notifyListeners();
+  Future<void> adicionarTransacao(Transacao novaTransacao) async {
+    // final usuarioAtual = FirebaseAuth.instance.currentUser;
+    // if (usuarioAtual == null) return;
+    String uidFalso = 'usuario_teste_123';
+
+    await FirebaseFirestore.instance
+        .collection('usuarios')
+        // .doc(usuarioAtual.uid)
+        .doc(uidFalso)
+        .collection('transacoes')
+        .add(novaTransacao.toMap());
+  }
+
+  Future<void> removerTransacao(Transacao transacao) async {
+    // final usuarioAtual = FirebaseAuth.instance.currentUser;
+    // if (usuarioAtual == null || transacao.id == null) return;
+    String uidFalso = 'usuario_teste_123';
+    if (transacao.id == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('usuarios')
+        // .doc(usuarioAtual.uid)
+        .doc(uidFalso)
+        .collection('transacoes')
+        .doc(transacao.id)
+        .delete();
+  }
+
+  Future<void> atualizarTransacao(Transacao transacaoOriginal,
+      String novoTitulo, double novoValor, DateTime novaData) async {
+    //final usuarioAtual = FirebaseAuth.instance.currentUser;
+    //if (usuarioAtual == null || transacaoOriginal.id == null) return;
+    String uidFalso = 'usuario_teste_123';
+    if (transacaoOriginal.id == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('usuarios')
+        //  .doc(usuarioAtual.uid)
+        .doc(uidFalso)
+        .collection('transacoes')
+        .doc(transacaoOriginal.id)
+        .update({
+      'titulo': novoTitulo,
+      'valor': novoValor,
+      'data': Timestamp.fromDate(novaData),
+    });
   }
 
   double despesasDoMes(DateTime dataSelecionada) {
     return _transacoes
         .where((t) =>
-            t['tipo'] == 'despesa' &&
-            t['data'].month == dataSelecionada.month &&
-            t['data'].year == dataSelecionada.year)
-        .fold(0.0, (soma, item) => soma + item['valor']);
+            t.tipo == 'despesa' &&
+            t.data.month == dataSelecionada.month &&
+            t.data.year == dataSelecionada.year)
+        .fold(0.0, (soma, item) => soma + item.valor);
   }
 
   double receitasDoMes(DateTime dataSelecionada) {
     return _transacoes
         .where((t) =>
-            t['tipo'] == 'receita' &&
-            t['data'].month == dataSelecionada.month &&
-            t['data'].year == dataSelecionada.year)
-        .fold(0.0, (soma, item) => soma + item['valor']);
+            t.tipo == 'receita' &&
+            t.data.month == dataSelecionada.month &&
+            t.data.year == dataSelecionada.year)
+        .fold(0.0, (soma, item) => soma + item.valor);
   }
 
   double saldoDoMes(DateTime dataSelecionada) {

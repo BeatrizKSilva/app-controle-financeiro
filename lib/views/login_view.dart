@@ -78,6 +78,11 @@ class _LoginState extends State<Login> {
                     String email = _emailController.text.trim();
                     String senha = _passwordController.text.trim();
 
+                    // Substituir validação Mock pela Autenticação real do Firebase
+                    // o Firebase Auth não registra nenhum usuário ativo 
+                    // na sessão. Como o banco de dados (Firestore) depende do usuário logado 
+                    // o sistema bloqueia as operações
+                    
                     if (email == UserMock.email && senha == UserMock.senha) {
                       Navigator.pushReplacement(
                         context,

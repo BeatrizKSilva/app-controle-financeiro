@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vinta_financas/controllers/categoria_despesa_controller.dart';
+import 'package:vinta_financas/controllers/categoria_receita_controller.dart';
 import 'package:vinta_financas/controllers/transacao_controller.dart';
+import 'package:vinta_financas/models/categoria.dart' as model;
 import 'package:vinta_financas/views/categoria_view.dart';
 import 'package:vinta_financas/views/graficos_view.dart';
 import 'package:vinta_financas/views/opcoes_view.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
 import 'package:vinta_financas/views/relatorio_view.dart';
+import 'package:vinta_financas/models/transacao.dart';
 
 class PrincipalView extends StatefulWidget {
   const PrincipalView({super.key});
@@ -162,12 +166,13 @@ class _PrincipalViewState extends State<PrincipalView> {
             );
 
             if (resultado != null && resultado is Map<String, dynamic>) {
-              transacaoController.adicionarTransacao({
-                'tipo': isReceitaFiltro ? 'receita' : 'despesa',
-                'valor': resultado['valor'],
-                'categoria': resultado['categoria'],
-                'data': resultado['data'],
-              });
+              transacaoController.adicionarTransacao(Transacao(
+                titulo: resultado['titulo'] ?? 'Nova Transação',
+                tipo: isReceitaFiltro ? 'receita' : 'despesa',
+                valor: resultado['valor'],
+                data: resultado['data'],
+                categoriaId: resultado['categoria'].nome,
+              ));
             }
           },
           backgroundColor: Colors.pink.shade300,
@@ -199,18 +204,20 @@ class _PrincipalViewState extends State<PrincipalView> {
   }
 
   Widget _buildListaTransacoes(TransacaoController controller) {
-    List<Map<String, dynamic>> transacoesFiltradas =
-        controller.transacoes.where((t) {
-      return t['data'].month == _dataSelecionada.month &&
-          t['data'].year == _dataSelecionada.year;
+    final catDespesaController = context.watch<CategoriaDespesaController>();
+    final catReceitaController = context.watch<CategoriaReceitaController>();
+
+    List<Transacao> transacoesFiltradas = controller.transacoes.where((t) {
+      return t.data.month == _dataSelecionada.month &&
+          t.data.year == _dataSelecionada.year;
     }).toList();
 
     if (_filtroAtual == 'Receitas') {
       transacoesFiltradas =
-          transacoesFiltradas.where((t) => t['tipo'] == 'receita').toList();
+          transacoesFiltradas.where((t) => t.tipo == 'receita').toList();
     } else if (_filtroAtual == 'Despesas') {
       transacoesFiltradas =
-          transacoesFiltradas.where((t) => t['tipo'] == 'despesa').toList();
+          transacoesFiltradas.where((t) => t.tipo == 'despesa').toList();
     }
 
     if (transacoesFiltradas.isEmpty) {
@@ -233,8 +240,17 @@ class _PrincipalViewState extends State<PrincipalView> {
       padding: const EdgeInsets.all(10),
       itemBuilder: (context, index) {
         final transacao = transacoesFiltradas[index];
-        final categoria = transacao['categoria'];
-        final isReceita = transacao['tipo'] == 'receita';
+        final isReceita = transacao.tipo == 'receita';
+
+        final listaParaBusca = isReceita
+            ? catReceitaController.categorias
+            : catDespesaController.categorias;
+
+        final categoriaReal = listaParaBusca.firstWhere(
+          (cat) => cat.nome == transacao.categoriaId,
+          orElse: () => model.Categoria(
+              nome: 'Outros', icone: Icons.help_outline, cor: Colors.grey),
+        );
 
         return Slidable(
           key: ValueKey(transacao.hashCode),
@@ -246,13 +262,17 @@ class _PrincipalViewState extends State<PrincipalView> {
                   final resultado = await mostrarPainelValor(
                     context: context,
                     titulo: 'Editar valor',
-                    valorInicial: transacao['valor'],
-                    dataInicial: transacao['data'],
+                    tituloInicial: transacao.titulo,
+                    valorInicial: transacao.valor,
+                    dataInicial: transacao.data,
                     corBotao: Colors.orange,
                   );
                   if (resultado != null) {
                     controller.atualizarTransacao(
-                        transacao, resultado['valor'], resultado['data']);
+                        transacao,
+                        resultado['titulo'], // NOVO
+                        resultado['valor'],
+                        resultado['data']);
                   }
                 },
                 backgroundColor: Colors.orange,
@@ -269,15 +289,15 @@ class _PrincipalViewState extends State<PrincipalView> {
           ),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: categoria.cor,
-              child: Icon(categoria.icone, color: Colors.white),
+              backgroundColor: categoriaReal.cor,
+              child: Icon(categoriaReal.icone, color: Colors.white),
             ),
-            title: Text(categoria.nome,
+            title: Text(transacao.titulo,
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(
-                "${transacao['data'].day}/${transacao['data'].month}/${transacao['data'].year}"),
+                "${categoriaReal.nome} • ${transacao.data.day}/${transacao.data.month}/${transacao.data.year}"),
             trailing: Text(
-              '${isReceita ? '+' : '-'} R\$ ${transacao['valor'].toStringAsFixed(2)}',
+              '${isReceita ? '+' : '-'} R\$ ${transacao.valor.toStringAsFixed(2)}',
               style: TextStyle(
                 color: isReceita ? Colors.green : Colors.red,
                 fontWeight: FontWeight.bold,

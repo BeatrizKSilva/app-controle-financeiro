@@ -23,7 +23,7 @@ class Transacao {
       'valor': valor,
       'data': Timestamp.fromDate(data),
       'tipo': tipo,
-      'categoriaID': categoriaId,
+      'categoriaId': categoriaId,
     };
   }
 

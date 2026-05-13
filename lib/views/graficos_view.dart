@@ -39,9 +39,9 @@ class _GraficosViewState extends State<GraficosView> {
   Widget build(BuildContext context) {
     final transacoes = context.watch<TransacaoController>().transacoes;
     final transacoesDoMes = transacoes.where((t) {
-      return t['data'].month == widget.dataSelecionada.month &&
-          t['data'].year == widget.dataSelecionada.year &&
-          t['tipo'] == _tipoFiltro;
+      return t.data.month == widget.dataSelecionada.month &&
+          t.data.year == widget.dataSelecionada.year &&
+          t.tipo == _tipoFiltro;
     }).toList();
 
     Map<String, double> totaisPorCategoria = {};
@@ -49,10 +49,11 @@ class _GraficosViewState extends State<GraficosView> {
     double totalGeral = 0.0;
 
     for (var t in transacoesDoMes) {
-      String nome = t['categoria'].nome;
-      double valor = t['valor'];
+      String nome = t.categoriaId;
+      double valor = t.valor;
       totaisPorCategoria[nome] = (totaisPorCategoria[nome] ?? 0) + valor;
-      coresPorCategoria[nome] = t['categoria'].cor;
+      coresPorCategoria[nome] =
+          Colors.primaries[nome.hashCode % Colors.primaries.length];
       totalGeral += valor;
     }
 

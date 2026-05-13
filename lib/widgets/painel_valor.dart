@@ -4,9 +4,13 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
   required BuildContext context,
   required String titulo,
   required Color corBotao,
+  String? tituloInicial,
   double? valorInicial,
   DateTime? dataInicial,
 }) {
+  TextEditingController tituloController = TextEditingController(
+    text: tituloInicial ?? '',
+  );
   TextEditingController valorController = TextEditingController(
     text: valorInicial != null ? valorInicial.toStringAsFixed(2) : '',
   );
@@ -68,7 +72,16 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                TextField(
+                  controller: tituloController,
+                  decoration: InputDecoration(
+                    labelText: 'Título da Transação',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
                 TextField(
                   controller: valorController,
                   keyboardType:
@@ -97,6 +110,7 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
 
                         if (valor > 0) {
                           Navigator.pop(context, {
+                            'titulo': tituloController.text.trim(),
                             'valor': valor,
                             'data': data,
                           });

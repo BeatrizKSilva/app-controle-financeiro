@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'categoria.dart'; 
+import 'categoria.dart';
 
 class CategoriaDespesa extends Categoria {
   double? limiteMensal;

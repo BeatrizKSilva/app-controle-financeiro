@@ -154,6 +154,7 @@ class _CategoriaState extends State<Categoria> {
 
     if (resultado != null && context.mounted) {
       Navigator.pop(context, {
+        'titulo': resultado['titulo'],
         'valor': resultado['valor'],
         'categoria': categoria,
         'data': resultado['data'],
