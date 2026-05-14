@@ -8,17 +8,16 @@ class TransacaoController extends ChangeNotifier {
   List<Transacao> get transacoes => _transacoes;
 
   TransacaoController() {
-    _iniciarBanco('usuario_teste_123');
+    _iniciarBanco();
   }
 
-  void _iniciarBanco(String uid) {
-    // final usuarioAtual = FirebaseAuth.instance.currentUser;
-    // if (usuarioAtual == null) return;
+  void _iniciarBanco() {
+    final usuarioAtual = FirebaseAuth.instance.currentUser;
+    if (usuarioAtual == null) return;
 
     FirebaseFirestore.instance
         .collection('usuarios')
-        // .doc(usuarioAtual.uid)
-        .doc(uid)
+        .doc(usuarioAtual.uid)
         .collection('transacoes')
         .snapshots()
         .listen((snapshot) {
@@ -31,28 +30,23 @@ class TransacaoController extends ChangeNotifier {
   }
 
   Future<void> adicionarTransacao(Transacao novaTransacao) async {
-    // final usuarioAtual = FirebaseAuth.instance.currentUser;
-    // if (usuarioAtual == null) return;
-    String uidFalso = 'usuario_teste_123';
+    final usuarioAtual = FirebaseAuth.instance.currentUser;
+    if (usuarioAtual == null) return;
 
     await FirebaseFirestore.instance
         .collection('usuarios')
-        // .doc(usuarioAtual.uid)
-        .doc(uidFalso)
+        .doc(usuarioAtual.uid)
         .collection('transacoes')
         .add(novaTransacao.toMap());
   }
 
   Future<void> removerTransacao(Transacao transacao) async {
-    // final usuarioAtual = FirebaseAuth.instance.currentUser;
-    // if (usuarioAtual == null || transacao.id == null) return;
-    String uidFalso = 'usuario_teste_123';
-    if (transacao.id == null) return;
+    final usuarioAtual = FirebaseAuth.instance.currentUser;
+    if (usuarioAtual == null || transacao.id == null) return;
 
     await FirebaseFirestore.instance
         .collection('usuarios')
-        // .doc(usuarioAtual.uid)
-        .doc(uidFalso)
+        .doc(usuarioAtual.uid)
         .collection('transacoes')
         .doc(transacao.id)
         .delete();
@@ -60,15 +54,12 @@ class TransacaoController extends ChangeNotifier {
 
   Future<void> atualizarTransacao(Transacao transacaoOriginal,
       String novoTitulo, double novoValor, DateTime novaData) async {
-    //final usuarioAtual = FirebaseAuth.instance.currentUser;
-    //if (usuarioAtual == null || transacaoOriginal.id == null) return;
-    String uidFalso = 'usuario_teste_123';
-    if (transacaoOriginal.id == null) return;
+    final usuarioAtual = FirebaseAuth.instance.currentUser;
+    if (usuarioAtual == null || transacaoOriginal.id == null) return;
 
     await FirebaseFirestore.instance
         .collection('usuarios')
-        //  .doc(usuarioAtual.uid)
-        .doc(uidFalso)
+        .doc(usuarioAtual.uid)
         .collection('transacoes')
         .doc(transacaoOriginal.id)
         .update({
