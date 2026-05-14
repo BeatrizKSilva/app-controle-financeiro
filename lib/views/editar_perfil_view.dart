@@ -79,7 +79,7 @@ class _EditarPerfilViewState extends State<EditarPerfilView> {
   void _fazerLogout() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const Login()),
+      MaterialPageRoute(builder: (context) => const LoginView()),
       (route) => false,
     );
   }

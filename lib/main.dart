@@ -48,7 +48,7 @@ class VintaApp extends StatelessWidget {
       supportedLocales: const [
         Locale('pt', 'BR'),
       ],
-      home: const Login(),
+      home: const LoginView(),
     );
   }
 }

@@ -2,121 +2,135 @@ import 'package:flutter/material.dart';
 import 'package:vinta_financas/controllers/login_controller.dart';
 import 'package:vinta_financas/views/cadastro_view.dart';
 import 'package:vinta_financas/views/principal_view.dart';
-import 'package:vinta_financas/repositories/user_mock.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginViewState extends State<LoginView> {
+
   final _formKey = GlobalKey<FormState>();
+  
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
-  final LoginController _controller = LoginController();
+
+  final LoginController _loginController = LoginController();
+
+  bool _estaCarregando = false;
+
+  void _processarLogin() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _estaCarregando = true);
+
+      String? erro = await _loginController.fazerLogin(
+        email: _emailController.text,
+        senha: _passwordController.text,
+      );
+
+      if (mounted) {
+
+        setState(() => _estaCarregando = false);
+
+        if (erro == null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const PrincipalView()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(erro),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Icon(
-                Icons.account_balance_wallet,
-                size: 90,
-                color: Colors.pink,
-              ),
-              const SizedBox(height: 30),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'E-mail:',
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.0),
-                  ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 80),
+                const Icon(Icons.account_balance_wallet, size: 100, color: Colors.pink),
+                const SizedBox(height: 20),
+                const Text(
+                  'Vinta Finanças',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.pink),
                 ),
-                validator: _controller.validarEmail,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: InputDecoration(
-                  labelText: 'Senha:',
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.0),
-                  ),
-                ),
-                validator: _controller.validarSenha,
-              ),
-              const SizedBox(height: 26.0),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    String email = _emailController.text.trim();
-                    String senha = _passwordController.text.trim();
+                const SizedBox(height: 40),
 
-                    // Substituir validação Mock pela Autenticação real do Firebase
-                    // o Firebase Auth não registra nenhum usuário ativo 
-                    // na sessão. Como o banco de dados (Firestore) depende do usuário logado 
-                    // o sistema bloqueia as operações
-                    
-                    if (email == UserMock.email && senha == UserMock.senha) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PrincipalView(),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Email ou senha inválidos'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14.0),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                  ),
+                  validator: _loginController.validarEmail,
                 ),
-                child: const Text('Entrar', style: TextStyle(fontSize: 20.0)),
-              ),
-              const SizedBox(height: 14.0),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CadastroView()),
-                  );
-                },
-                child: const Text('Não tem conta? Cadastre-se'),
-              ),
-            ],
+                const SizedBox(height: 15),
+
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Senha',
+                    prefixIcon: const Icon(Icons.lock),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                  ),
+                  validator: _loginController.validarSenha,
+                ),
+                const SizedBox(height: 25),
+
+                _estaCarregando
+                    ? const Center(child: CircularProgressIndicator(color: Colors.pink))
+                    : ElevatedButton(
+                        onPressed: _processarLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.pink,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                        ),
+                        child: const Text('Entrar', style: TextStyle(fontSize: 18)),
+                      ),
+
+                const SizedBox(height: 15),
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CadastroView()),
+                    );
+                  },
+                  child: const Text(
+                    'Não tem uma conta? Cadastre-se',
+                    style: TextStyle(color: Colors.pink),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
