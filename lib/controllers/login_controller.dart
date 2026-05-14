@@ -169,4 +169,66 @@ class LoginController {
 
   }
 
+  String? obterEmailUsuario() {
+    return _auth.currentUser?.email;
+  }
+
+  Future<String?> atualizarSenha(String senhaAntiga, String senhaNova) async {
+    try {
+
+      User? usuario = _auth.currentUser;
+
+      if (usuario != null && usuario.email != null) {
+
+        AuthCredential credencial = EmailAuthProvider.credential(
+          email: usuario.email!,
+          password: senhaAntiga,
+        );
+        await usuario.reauthenticateWithCredential(credencial);
+        
+        await usuario.updatePassword(senhaNova);
+        return null;
+
+      }
+      return 'Nenhum utilizador logado.';
+
+    } on FirebaseAuthException catch (e) {
+
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') return 'A senha antiga está incorreta.';
+
+      return 'Erro: ${e.message}';
+
+    }
+  }
+
+  Future<String?> excluirConta(String senhaAtual) async {
+
+    try {
+
+      User? usuario = _auth.currentUser;
+
+      if (usuario != null && usuario.email != null) {
+
+        AuthCredential credencial = EmailAuthProvider.credential(
+          email: usuario.email!,
+          password: senhaAtual,
+        );
+        await usuario.reauthenticateWithCredential(credencial);
+        
+        await _firestore.collection('usuarios').doc(usuario.uid).delete();
+        
+        await usuario.delete();
+        return null;
+
+      }
+      return 'Nenhum utilizador logado.';
+
+    } on FirebaseAuthException catch (e) {
+
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') return 'A senha está incorreta.';
+      return 'Erro ao excluir: ${e.message}';
+      
+    }
+  }
+
 }
