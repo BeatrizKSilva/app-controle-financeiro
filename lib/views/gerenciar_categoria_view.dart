@@ -16,7 +16,7 @@ class GerenciarCategoriasView extends StatefulWidget {
 }
 
 class _GerenciarCategoriasViewState extends State<GerenciarCategoriasView> {
-  void _excluirCategoria(int index) {
+  void _excluirCategoria(dynamic categoria) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -30,7 +30,7 @@ class _GerenciarCategoriasViewState extends State<GerenciarCategoriasView> {
           TextButton(
             onPressed: () {
               setState(() {
-                widget.controller.categorias.removeAt(index);
+                widget.controller.removerCategoria(categoria);
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -49,8 +49,7 @@ class _GerenciarCategoriasViewState extends State<GerenciarCategoriasView> {
     );
   }
 
-  void _editarCategoria(int index) {
-    final categoria = widget.controller.categorias[index];
+  void _editarCategoria(dynamic categoria) {
     TextEditingController nomeController =
         TextEditingController(text: categoria.nome);
 
@@ -80,10 +79,8 @@ class _GerenciarCategoriasViewState extends State<GerenciarCategoriasView> {
                 );
                 return;
               }
+              widget.controller.editarCategoria(categoria, novoNome);
 
-              setState(() {
-                widget.controller.editarCategoria(index, novoNome);
-              });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -136,11 +133,11 @@ class _GerenciarCategoriasViewState extends State<GerenciarCategoriasView> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () => _editarCategoria(index),
+                          onPressed: () => _editarCategoria(categoria),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _excluirCategoria(index),
+                          onPressed: () => _excluirCategoria(categoria),
                         ),
                       ],
                     ),

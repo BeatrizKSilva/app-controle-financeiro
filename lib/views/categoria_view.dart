@@ -20,24 +20,51 @@ class Categoria extends StatefulWidget {
 
 class _CategoriaState extends State<Categoria> {
   final List<IconData> _opcoesDeIcones = [
-    Icons.shopping_bag_outlined,
-    Icons.local_gas_station_outlined,
-    Icons.fitness_center_outlined,
-    Icons.pets_outlined,
-    Icons.school_outlined,
-    Icons.medical_services_outlined,
-    Icons.flight_takeoff_outlined,
-    Icons.movie_outlined,
+// Alimentação e Compras
+    Icons.shopping_cart_outlined, Icons.shopping_bag_outlined,
+    Icons.restaurant_outlined, Icons.local_cafe_outlined,
+    Icons.fastfood_outlined,
+    // Transporte e Contas
+    Icons.directions_car_outlined, Icons.directions_bus_outlined,
+    Icons.local_gas_station_outlined, Icons.flight_takeoff_outlined,
+    Icons.home_outlined, Icons.water_drop_outlined,
+    Icons.electric_bolt_outlined, Icons.wifi_outlined,
+    // Saúde, Beleza e Esportes
+    Icons.medical_services_outlined, Icons.fitness_center_outlined,
+    Icons.face_retouching_natural, Icons.spa_outlined,
+    // Educação, Lazer e Pets
+    Icons.school_outlined, Icons.menu_book_outlined,
+    Icons.movie_outlined, Icons.sports_esports_outlined,
+    Icons.palette_outlined, Icons.music_note_outlined,
+    Icons.pets_outlined, Icons.child_care_outlined,
+    // Finanças e Trabalho
+    Icons.attach_money, Icons.credit_card_outlined,
+    Icons.work_outline, Icons.trending_up,
+    // Outros
+    Icons.card_giftcard_outlined, Icons.category_outlined, Icons.more_horiz,
   ];
 
   final List<Color> _opcoesDeCores = [
-    Colors.purple,
+    Colors.red,
     Colors.pink,
-    Colors.amber,
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.indigo,
+    Colors.blue,
+    Colors.lightBlue,
     Colors.cyan,
     Colors.teal,
-    Colors.indigo,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow.shade700,
+    Colors.amber,
+    Colors.orange,
+    Colors.deepOrange,
     Colors.brown,
+    Colors.blueGrey,
+    Colors.grey.shade700,
+    Colors.black87
   ];
 
   void _mostrarNovacategoria(BuildContext context, dynamic controllerAtivo) {
@@ -187,12 +214,30 @@ class _CategoriaState extends State<Categoria> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Selecione a Categoria',
-                style: TextStyle(
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.category_outlined,
+                      color: Colors.pink.shade300, size: 24),
+                ),
+                const SizedBox(width: 15),
+                Text(
+                  'Selecione a Categoria',
+                  style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black)),
-            const SizedBox(height: 20),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 25),
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
