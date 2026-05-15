@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/transacao.dart';
+import 'package:vinta_financas/models/transacao.dart';
 
 class TransacaoController extends ChangeNotifier {
   List<Transacao> _transacoes = [];
@@ -38,6 +38,54 @@ class TransacaoController extends ChangeNotifier {
         .doc(usuarioAtual.uid)
         .collection('transacoes')
         .add(novaTransacao.toMap());
+  }
+
+  Future<void> adicionarTransacoesRecorrentes(
+      Transacao transacaoBase, DateTime dataFim) async {
+    final usuarioAtual = FirebaseAuth.instance.currentUser;
+    if (usuarioAtual == null) return;
+
+    final batch = FirebaseFirestore.instance.batch();
+    final colecao = FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(usuarioAtual.uid)
+        .collection('transacoes');
+
+    DateTime dataAtual = transacaoBase.data;
+
+    int diferencaMeses = ((dataFim.year - dataAtual.year) * 12) +
+        (dataFim.month - dataAtual.month);
+
+    if (diferencaMeses < 0) diferencaMeses = 0;
+
+    for (int i = 0; i <= diferencaMeses; i++) {
+      final docRef = colecao.doc();
+
+      final novaTransacao = Transacao(
+        titulo: transacaoBase.titulo,
+        valor: transacaoBase.valor,
+        tipo: transacaoBase.tipo,
+        categoriaId: transacaoBase.categoriaId,
+        data: dataAtual,
+      );
+
+      batch.set(docRef, novaTransacao.toMap());
+
+      int novoMes = dataAtual.month + 1;
+      int novoAno = dataAtual.year;
+      if (novoMes > 12) {
+        novoMes = 1;
+        novoAno++;
+      }
+
+      int diaOriginal = transacaoBase.data.day;
+      int ultimoDiaDoNovoMes = DateTime(novoAno, novoMes + 1, 0).day;
+      int diaSeguro =
+          diaOriginal > ultimoDiaDoNovoMes ? ultimoDiaDoNovoMes : diaOriginal;
+
+      dataAtual = DateTime(novoAno, novoMes, diaSeguro);
+    }
+    await batch.commit();
   }
 
   Future<void> removerTransacao(Transacao transacao) async {

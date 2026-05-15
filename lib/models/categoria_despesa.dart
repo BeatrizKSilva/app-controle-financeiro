@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'categoria.dart';
 
 class CategoriaDespesa extends Categoria {

@@ -166,13 +166,19 @@ class _PrincipalViewState extends State<PrincipalView> {
             );
 
             if (resultado != null && resultado is Map<String, dynamic>) {
-              transacaoController.adicionarTransacao(Transacao(
+              Transacao novaTransacao = Transacao(
                 titulo: resultado['titulo'] ?? 'Nova Transação',
                 tipo: isReceitaFiltro ? 'receita' : 'despesa',
                 valor: resultado['valor'],
                 data: resultado['data'],
                 categoriaId: resultado['categoria'].nome,
-              ));
+              );
+              if (resultado['dataFim'] != null) {
+                transacaoController.adicionarTransacoesRecorrentes(
+                    novaTransacao, resultado['dataFim']);
+              } else {
+                transacaoController.adicionarTransacao(novaTransacao);
+              }
             }
           },
           backgroundColor: Colors.pink.shade300,

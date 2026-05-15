@@ -185,6 +185,7 @@ class _CategoriaState extends State<Categoria> {
         'valor': resultado['valor'],
         'categoria': categoria,
         'data': resultado['data'],
+        'dataFim': resultado['dataFim'],
       });
     }
   }
