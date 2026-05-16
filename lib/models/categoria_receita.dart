@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'categoria.dart'; // Importa a classe pai
+import 'categoria.dart';
 
 class CategoriaReceita extends Categoria {
   bool isRendaFixa;

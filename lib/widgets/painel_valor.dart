@@ -15,6 +15,8 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
     text: valorInicial != null ? valorInicial.toStringAsFixed(2) : '',
   );
   DateTime data = dataInicial ?? DateTime.now();
+  bool isRecorrente = false;
+  DateTime dataFim = DateTime(data.year, data.month + 1, data.day);
 
   return showModalBottomSheet<Map<String, dynamic>>(
     context: context,
@@ -64,6 +66,10 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
                                 dataEscolhida != data) {
                               setStateBottomSheet(() {
                                 data = dataEscolhida;
+                                if (dataFim.isBefore(data)) {
+                                  dataFim = DateTime(
+                                      data.year, data.month + 1, data.day);
+                                }
                               });
                             }
                           },
@@ -94,7 +100,58 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
+                CheckboxListTile(
+                  title: const Text("Repetir transação?",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  value: isRecorrente,
+                  activeColor: corBotao,
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  onChanged: (valor) {
+                    setStateBottomSheet(() {
+                      isRecorrente = valor ?? false;
+                    });
+                  },
+                ),
+                if (isRecorrente)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 15),
+                    decoration: BoxDecoration(
+                      color: corBotao.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border:
+                          Border.all(color: corBotao.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Repetir até:",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        TextButton.icon(
+                          icon: Icon(Icons.edit_calendar, color: corBotao),
+                          label: Text("${dataFim.month}/${dataFim.year}",
+                              style: TextStyle(color: corBotao)),
+                          onPressed: () async {
+                            final DateTime? dataEscolhida =
+                                await showDatePicker(
+                              context: context,
+                              initialDate: dataFim,
+                              firstDate: data,
+                              lastDate: DateTime(2100),
+                            );
+                            if (dataEscolhida != null) {
+                              setStateBottomSheet(() {
+                                dataFim = dataEscolhida;
+                              });
+                            }
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -113,6 +170,7 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
                             'titulo': tituloController.text.trim(),
                             'valor': valor,
                             'data': data,
+                            'dataFim': isRecorrente ? dataFim : null,
                           });
                         }
                       }
