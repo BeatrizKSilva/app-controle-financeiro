@@ -20,6 +20,9 @@ class _CadastroViewState extends State<CadastroView> {
 
   bool _estaCarregando = false;
 
+  bool _ocultarSenha = true;
+  bool _ocultarConfirmarSenha = true;
+
   void _processarCadastro() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _estaCarregando = true);
@@ -106,10 +109,21 @@ class _CadastroViewState extends State<CadastroView> {
 
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _ocultarSenha,
                   decoration: InputDecoration(
                     labelText: 'Senha:',
                     prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _ocultarSenha ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _ocultarSenha = !_ocultarSenha;
+                        });
+                      },
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.0),
                     ),
@@ -120,10 +134,21 @@ class _CadastroViewState extends State<CadastroView> {
 
                 TextFormField(
                   controller: _confirmPasswordController,
-                  obscureText: true,
+                  obscureText: _ocultarConfirmarSenha,
                   decoration: InputDecoration(
                     labelText: 'Confirmar Senha:',
                     prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _ocultarConfirmarSenha ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _ocultarConfirmarSenha = !_ocultarConfirmarSenha;
+                        });
+                      },
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.0),
                     ),

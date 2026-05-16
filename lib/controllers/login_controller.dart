@@ -41,7 +41,7 @@ class LoginController {
     try {
 
       UserCredential credencial = await _auth.createUserWithEmailAndPassword(
-        email: email,
+        email: email.trim(),
         password: senha,
       );
 
@@ -52,7 +52,7 @@ class LoginController {
         Usuario novoUsuario = Usuario(
           id: usuarioFirebase.uid,
           nome: nome,
-          email: email,
+          email: email.trim(),
         );
 
         await _firestore
@@ -63,6 +63,9 @@ class LoginController {
         return null;
 
       }
+
+      return 'Erro inesperado: O utilizador não foi retornado pelo servidor.';
+
     } on FirebaseAuthException catch (e) {
 
       if (e.code == 'weak-password') {
@@ -74,6 +77,9 @@ class LoginController {
         return 'O e-mail já está em uso.';
 
       }
+
+      return 'Erro de autenticação: ${e.message}';
+      
     } catch (e) {
 
       return 'Erro desconhecido ao criar a conta.';
@@ -89,7 +95,7 @@ class LoginController {
     try {
 
       await _auth.signInWithEmailAndPassword(
-        email: email,
+        email: email.trim(),
         password: senha,
         );
 

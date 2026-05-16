@@ -21,6 +21,8 @@ class _LoginViewState extends State<LoginView> {
 
   bool _estaCarregando = false;
 
+  bool _ocultarSenha = true;
+
   void _processarLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _estaCarregando = true);
@@ -88,10 +90,27 @@ class _LoginViewState extends State<LoginView> {
 
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _ocultarSenha,
                   decoration: InputDecoration(
                     labelText: 'Senha',
                     prefixIcon: const Icon(Icons.lock),
+
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _ocultarSenha ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+
+                        setState(() {
+
+                          _ocultarSenha = !_ocultarSenha;
+
+                        });
+
+                      },
+                    ),
+                    
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.0),
                     ),
