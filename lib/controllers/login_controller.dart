@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vinta_financas/models/usuario_model.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginController {
   
@@ -132,6 +133,9 @@ class LoginController {
   Future<void> fazerLogout() async {
 
     try {
+
+      await GoogleSignIn.instance.signOut(); 
+      
       await _auth.signOut();
     
     } catch (e) {
@@ -234,6 +238,53 @@ class LoginController {
       if (e.code == 'wrong-password' || e.code == 'invalid-credential') return 'A senha está incorreta.';
       return 'Erro ao excluir: ${e.message}';
       
+    }
+  }
+
+  Future<String?> loginComGoogle() async {
+    
+    try {
+
+      final googleSignIn = GoogleSignIn.instance;
+
+      try {
+        await googleSignIn.initialize();
+      } catch (_) {}
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
+
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final AuthCredential credencial = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCred = await _auth.signInWithCredential(credencial);
+      User? usuarioFirebase = userCred.user;
+
+      if (usuarioFirebase != null && userCred.additionalUserInfo?.isNewUser == true) {
+
+        Usuario novoUsuario = Usuario(
+          id: usuarioFirebase.uid,
+          nome: usuarioFirebase.displayName ?? 'Usuário Google',
+          email: usuarioFirebase.email!,
+        );
+
+        await _firestore
+          .collection('usuarios')
+          .doc(usuarioFirebase.uid)
+          .set(novoUsuario.toMap());
+
+      }
+
+      return null;
+    
+    } catch (e) {
+
+      return 'Erro ao fazer login com Google: $e';
+
     }
   }
 

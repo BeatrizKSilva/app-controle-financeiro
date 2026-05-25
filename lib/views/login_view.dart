@@ -133,8 +133,73 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         child: const Text('Entrar', style: TextStyle(fontSize: 18)),
                       ),
+                      
 
-                const SizedBox(height: 15),
+                const SizedBox(height: 20),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text('OU', style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    setState(() => _estaCarregando = true);
+                    
+                    String? erro = await _loginController.loginComGoogle();
+                    
+                    if (mounted) {
+
+                      setState(() => _estaCarregando = false);
+                      
+                      if (erro == null) {
+                       
+                        if (_loginController.obterEmailUsuario() != null) {
+
+                           Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const PrincipalView()),
+                          );
+
+                        }
+
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(erro), backgroundColor: Colors.red),
+                        );
+                      }
+
+                    }
+                  },
+                  icon: Image.network(
+                    'https://img.icons8.com/color/48/000000/google-logo.png',
+                    height: 24,
+                    width: 24,
+                    errorBuilder: (context, error, stackTrace) {
+
+                      return const Icon(Icons.g_mobiledata, size: 30, color: Colors.pink);
+                      
+                    },
+                  ),
+                  label: const Text(
+                    'Entrar com o Google',
+                    style: TextStyle(color: Colors.black87, fontSize: 16),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: const BorderSide(color: Colors.grey),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                  ),
+                ),
+
 
                 TextButton(
                   onPressed: () {
