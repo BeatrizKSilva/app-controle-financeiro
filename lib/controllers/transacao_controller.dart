@@ -67,6 +67,7 @@ class TransacaoController extends ChangeNotifier {
         tipo: transacaoBase.tipo,
         categoriaId: transacaoBase.categoriaId,
         data: dataAtual,
+        imagemCaminho: transacaoBase.imagemCaminho,
       );
 
       batch.set(docRef, novaTransacao.toMap());

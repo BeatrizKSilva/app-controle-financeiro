@@ -7,6 +7,7 @@ class Transacao {
   DateTime data;
   String tipo;
   String categoriaId;
+  String? imagemCaminho;
 
   Transacao({
     this.id,
@@ -15,6 +16,7 @@ class Transacao {
     required this.data,
     required this.tipo,
     required this.categoriaId,
+    this.imagemCaminho,
   });
 
   Map<String, dynamic> toMap() {
@@ -24,6 +26,7 @@ class Transacao {
       'data': Timestamp.fromDate(data),
       'tipo': tipo,
       'categoriaId': categoriaId,
+      'imagemCaminho': imagemCaminho,
     };
   }
 
@@ -35,6 +38,7 @@ class Transacao {
       data: (map['data'] as Timestamp).toDate(),
       tipo: map['tipo'] ?? 'despesa',
       categoriaId: map['categoriaId'] ?? '',
+      imagemCaminho: map['imagemCaminho'],
     );
   }
 }

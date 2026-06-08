@@ -11,6 +11,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
 import 'package:vinta_financas/views/relatorio_view.dart';
 import 'package:vinta_financas/models/transacao.dart';
+import 'dart:io';
 
 class PrincipalView extends StatefulWidget {
   const PrincipalView({super.key});
@@ -117,6 +118,154 @@ class _PrincipalViewState extends State<PrincipalView> {
     }
   }
 
+  void _mostrarDetalhesTransacao(BuildContext context, Transacao transacao,
+      model.Categoria categoria, bool isReceita) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: categoria.cor,
+                        radius: 25,
+                        child: Icon(categoria.icone,
+                            color: Colors.white, size: 28),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(transacao.titulo,
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(categoria.nome,
+                                style: TextStyle(color: Colors.grey.shade600)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Valor:", style: TextStyle(fontSize: 16)),
+                      Text(
+                        '${isReceita ? '+' : '-'} R\$ ${transacao.valor.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isReceita ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Data:", style: TextStyle(fontSize: 16)),
+                      Text(
+                        "${transacao.data.day.toString().padLeft(2, '0')}/${transacao.data.month.toString().padLeft(2, '0')}/${transacao.data.year}",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  if (transacao.imagemCaminho != null) ...[
+                    const SizedBox(height: 20),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Comprovante anexado:",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () =>
+                          _ampliarImagem(context, transacao.imagemCaminho!),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Image.file(
+                              File(transacao.imagemCaminho!),
+                              height: 150,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                            Container(
+                              height: 150,
+                              width: double.infinity,
+                              color: Colors.black.withValues(alpha: 0.2),
+                            ),
+                            const Icon(Icons.zoom_out_map,
+                                color: Colors.white, size: 30),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pink.shade300,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Fechar"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  void _ampliarImagem(BuildContext context, String caminhoImagem) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(10),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                InteractiveViewer(
+                  panEnabled: true,
+                  minScale: 0.5,
+                  maxScale: 4.0, // Zoom máximo de 4x
+                  child: Image.file(File(caminhoImagem), fit: BoxFit.contain),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.cancel, color: Colors.white, size: 35),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                )
+              ],
+            ),
+          );
+        });
+  }
+
   List<Widget> _getPages(TransacaoController transacaoController) {
     return [
       Column(
@@ -172,6 +321,7 @@ class _PrincipalViewState extends State<PrincipalView> {
                 valor: resultado['valor'],
                 data: resultado['data'],
                 categoriaId: resultado['categoria'].nome,
+                imagemCaminho: resultado['imagemCaminho'],
               );
               if (resultado['dataFim'] != null) {
                 transacaoController.adicionarTransacoesRecorrentes(
@@ -294,6 +444,8 @@ class _PrincipalViewState extends State<PrincipalView> {
             ],
           ),
           child: ListTile(
+            onTap: () => _mostrarDetalhesTransacao(
+                context, transacao, categoriaReal, isReceita),
             leading: CircleAvatar(
               backgroundColor: categoriaReal.cor,
               child: Icon(categoriaReal.icone, color: Colors.white),
