@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vinta_financas/models/transacao.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class TransacaoController extends ChangeNotifier {
   List<Transacao> _transacoes = [];
@@ -29,9 +31,63 @@ class TransacaoController extends ChangeNotifier {
     });
   }
 
+  Future<String?> _fazerUploadImagem(String? caminhoLocal) async {
+    if (caminhoLocal == null) return null;
+    if (caminhoLocal.startsWith('http')) return caminhoLocal;
+
+    try {
+      final usuarioAtual = FirebaseAuth.instance.currentUser;
+      if (usuarioAtual == null) return null;
+
+      File arquivoImagem = File(caminhoLocal);
+      String nomeArquivo = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      Reference pastaNoFirebase = FirebaseStorage.instance
+          .ref()
+          .child('usuarios')
+          .child(usuarioAtual.uid)
+          .child('comprovantes')
+          .child(nomeArquivo);
+
+      UploadTask tarefaUpload = pastaNoFirebase.putFile(arquivoImagem);
+      TaskSnapshot snapshot = await tarefaUpload;
+
+      String urlDownload = await snapshot.ref.getDownloadURL();
+      return urlDownload;
+    } catch (e) {
+      debugPrint('Erro ao fazer upload da imagem: $e');
+      return null;
+    }
+  }
+
+  Future<void> _apagarImagemSeOrfa(String? urlImagem) async {
+    if (urlImagem == null || !urlImagem.startsWith('http')) return;
+
+    final usuarioAtual = FirebaseAuth.instance.currentUser;
+    if (usuarioAtual == null) return;
+
+    try {
+      final ocorrencias = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(usuarioAtual.uid)
+          .collection('transacoes')
+          .where('imagemCaminho', isEqualTo: urlImagem)
+          .get();
+      if (ocorrencias.docs.isEmpty) {
+        Reference fotoRef = FirebaseStorage.instance.refFromURL(urlImagem);
+        await fotoRef.delete();
+        debugPrint('Imagem órfã apagada com sucesso do Storage!');
+      }
+    } catch (e) {
+      debugPrint('Erro ao tentar excluir imagem do Storage: $e');
+    }
+  }
+
   Future<void> adicionarTransacao(Transacao novaTransacao) async {
     final usuarioAtual = FirebaseAuth.instance.currentUser;
     if (usuarioAtual == null) return;
+    novaTransacao.imagemCaminho =
+        await _fazerUploadImagem(novaTransacao.imagemCaminho);
 
     await FirebaseFirestore.instance
         .collection('usuarios')
@@ -44,6 +100,8 @@ class TransacaoController extends ChangeNotifier {
       Transacao transacaoBase, DateTime dataFim) async {
     final usuarioAtual = FirebaseAuth.instance.currentUser;
     if (usuarioAtual == null) return;
+    String? linkImagemNuvem =
+        await _fazerUploadImagem(transacaoBase.imagemCaminho);
 
     final batch = FirebaseFirestore.instance.batch();
     final colecao = FirebaseFirestore.instance
@@ -67,7 +125,7 @@ class TransacaoController extends ChangeNotifier {
         tipo: transacaoBase.tipo,
         categoriaId: transacaoBase.categoriaId,
         data: dataAtual,
-        imagemCaminho: transacaoBase.imagemCaminho,
+        imagemCaminho: linkImagemNuvem,
       );
 
       batch.set(docRef, novaTransacao.toMap());
@@ -92,6 +150,7 @@ class TransacaoController extends ChangeNotifier {
   Future<void> removerTransacao(Transacao transacao) async {
     final usuarioAtual = FirebaseAuth.instance.currentUser;
     if (usuarioAtual == null || transacao.id == null) return;
+    String? imagemParaVerificar = transacao.imagemCaminho;
 
     await FirebaseFirestore.instance
         .collection('usuarios')
@@ -99,12 +158,29 @@ class TransacaoController extends ChangeNotifier {
         .collection('transacoes')
         .doc(transacao.id)
         .delete();
+
+    await _apagarImagemSeOrfa(imagemParaVerificar);
   }
 
-  Future<void> atualizarTransacao(Transacao transacaoOriginal,
-      String novoTitulo, double novoValor, DateTime novaData) async {
+  Future<void> atualizarTransacao(
+      Transacao transacaoOriginal,
+      String novoTitulo,
+      double novoValor,
+      DateTime novaData,
+      String? novaImagemCaminho) async {
     final usuarioAtual = FirebaseAuth.instance.currentUser;
     if (usuarioAtual == null || transacaoOriginal.id == null) return;
+
+    String? linkImagemFinal = transacaoOriginal.imagemCaminho;
+    String? imagemAntigaParaVerificar;
+
+    if (novaImagemCaminho != transacaoOriginal.imagemCaminho) {
+      if (novaImagemCaminho != null && !novaImagemCaminho.startsWith('http')) {
+        linkImagemFinal = await _fazerUploadImagem(novaImagemCaminho);
+      } else if (novaImagemCaminho == null) {
+        linkImagemFinal = null;
+      }
+    }
 
     await FirebaseFirestore.instance
         .collection('usuarios')
@@ -115,7 +191,12 @@ class TransacaoController extends ChangeNotifier {
       'titulo': novoTitulo,
       'valor': novoValor,
       'data': Timestamp.fromDate(novaData),
+      'imagemCaminho': linkImagemFinal,
     });
+
+    if (imagemAntigaParaVerificar != null) {
+      await _apagarImagemSeOrfa(imagemAntigaParaVerificar);
+    }
   }
 
   double despesasDoMes(DateTime dataSelecionada) {

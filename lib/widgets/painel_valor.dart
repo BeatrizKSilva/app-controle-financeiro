@@ -9,6 +9,7 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
   String? tituloInicial,
   double? valorInicial,
   DateTime? dataInicial,
+  String? imagemInicial,
 }) {
   TextEditingController tituloController = TextEditingController(
     text: tituloInicial ?? '',
@@ -20,7 +21,7 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
   bool isRecorrente = false;
   DateTime dataFim = DateTime(data.year, data.month + 1, data.day);
   final ImagePicker picker = ImagePicker();
-  String? caminhoImagemSelecionada;
+  String? caminhoImagemSelecionada = imagemInicial;
 
   return showModalBottomSheet<Map<String, dynamic>>(
     context: context,
@@ -35,8 +36,7 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
             try {
               final XFile? foto = await picker.pickImage(
                 source: source,
-                imageQuality:
-                    70, // Reduz o tamanho da foto para otimizar espaço/envio.
+                imageQuality: 70,
               );
               if (foto != null) {
                 setStateBottomSheet(() {
@@ -175,12 +175,20 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: Image.file(
-                                File(caminhoImagemSelecionada!),
-                                height: 120,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
+                              child:
+                                  caminhoImagemSelecionada!.startsWith('http')
+                                      ? Image.network(
+                                          caminhoImagemSelecionada!,
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.file(
+                                          File(caminhoImagemSelecionada!),
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
                             ),
                             Container(
                               height: 120,

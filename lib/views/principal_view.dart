@@ -196,12 +196,28 @@ class _PrincipalViewState extends State<PrincipalView> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            Image.file(
-                              File(transacao.imagemCaminho!),
-                              height: 150,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
+                            transacao.imagemCaminho!.startsWith('http')
+                                ? Image.network(
+                                    transacao.imagemCaminho!,
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, progress) {
+                                      if (progress == null) return child;
+                                      return const SizedBox(
+                                        height: 150,
+                                        child: Center(
+                                            child: CircularProgressIndicator(
+                                                color: Colors.pink)),
+                                      );
+                                    },
+                                  )
+                                : Image.file(
+                                    File(transacao.imagemCaminho!),
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
                             Container(
                               height: 150,
                               width: double.infinity,
@@ -248,8 +264,10 @@ class _PrincipalViewState extends State<PrincipalView> {
                 InteractiveViewer(
                   panEnabled: true,
                   minScale: 0.5,
-                  maxScale: 4.0, // Zoom máximo de 4x
-                  child: Image.file(File(caminhoImagem), fit: BoxFit.contain),
+                  maxScale: 4.0,
+                  child: caminhoImagem.startsWith('http')
+                      ? Image.network(caminhoImagem, fit: BoxFit.contain)
+                      : Image.file(File(caminhoImagem), fit: BoxFit.contain),
                 ),
                 Positioned(
                   top: 0,
@@ -421,6 +439,7 @@ class _PrincipalViewState extends State<PrincipalView> {
                     tituloInicial: transacao.titulo,
                     valorInicial: transacao.valor,
                     dataInicial: transacao.data,
+                    imagemInicial: transacao.imagemCaminho,
                     corBotao: Colors.orange,
                   );
                   if (resultado != null) {
@@ -428,7 +447,8 @@ class _PrincipalViewState extends State<PrincipalView> {
                         transacao,
                         resultado['titulo'], // NOVO
                         resultado['valor'],
-                        resultado['data']);
+                        resultado['data'],
+                        resultado['imagemCaminho']);
                   }
                 },
                 backgroundColor: Colors.orange,
