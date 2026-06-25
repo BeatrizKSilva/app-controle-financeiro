@@ -11,7 +11,6 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vinta_financas/widgets/painel_valor.dart';
 import 'package:vinta_financas/views/relatorio_view.dart';
 import 'package:vinta_financas/models/transacao.dart';
-import 'package:vinta_financas/controllers/cotacao_controller.dart';
 import 'dart:io';
 
 class PrincipalView extends StatefulWidget {
@@ -25,7 +24,6 @@ class _PrincipalViewState extends State<PrincipalView> {
   int _selectedIndex = 0;
   String _filtroAtual = 'Todos';
   DateTime _dataSelecionada = DateTime.now();
-  final CotacaoController _cotacaoController = CotacaoController();
 
   final List<String> _meses = const [
     'Jan',
@@ -291,7 +289,6 @@ class _PrincipalViewState extends State<PrincipalView> {
       Column(
         children: [
           _buildResumoHeader(transacaoController),
-          _buildCotacoesBar(),
           Expanded(child: _buildListaTransacoes(transacaoController)),
         ],
       ),
@@ -303,53 +300,6 @@ class _PrincipalViewState extends State<PrincipalView> {
       const Relatorio(),
       const Opcoes(),
     ];
-  }
-
-  Widget _buildCotacoesBar() {
-    return FutureBuilder<Map<String, String>>(
-      future: _cotacaoController.buscarCotacoes(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Center(child: CircularProgressIndicator(color: Colors.pink, strokeWidth: 2)),
-          );
-        }
-
-        String dolar = snapshot.data?['USD'] ?? '---';
-        String euro = snapshot.data?['EUR'] ?? '---';
-
-        return Container(
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-          decoration: BoxDecoration(
-            color: Colors.pink.shade50,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.pink.shade100),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.monetization_on, color: Colors.green, size: 20),
-                  const SizedBox(width: 6),
-                  Text('Dólar: R\$ $dolar', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                ],
-              ),
-              Container(height: 20, width: 1, color: Colors.pink.shade200), // Linha divisória
-              Row(
-                children: [
-                  const Icon(Icons.euro, color: Colors.blue, size: 20),
-                  const SizedBox(width: 6),
-                  Text('Euro: R\$ $euro', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override

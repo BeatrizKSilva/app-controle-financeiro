@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:vinta_financas/controllers/cotacao_controller.dart'; // IMPORT NOVO
 
 Future<Map<String, dynamic>?> mostrarPainelValor({
   required BuildContext context,
@@ -22,6 +23,12 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
   DateTime dataFim = DateTime(data.year, data.month + 1, data.day);
   final ImagePicker picker = ImagePicker();
   String? caminhoImagemSelecionada = imagemInicial;
+
+  String moedaSelecionada = 'BRL';
+  double taxaDolar = 1.0;
+  double taxaEuro = 1.0;
+  final CotacaoController cotacaoController = CotacaoController();
+  final Future<Map<String, String>> futureCotacoes = cotacaoController.buscarCotacoes();
 
   return showModalBottomSheet<Map<String, dynamic>>(
     context: context,
@@ -109,17 +116,77 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
                   ),
                 ),
                 const SizedBox(height: 15),
-                TextField(
-                  controller: valorController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    prefixText: 'R\$ ',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+
+                FutureBuilder<Map<String, String>>(
+                  future: futureCotacoes,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Align(
+                        alignment: Alignment.centerRight,
+                        child: Text("Buscando cotações...", style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                      );
+                    }
+                    
+                    if (snapshot.hasData) {
+                      taxaDolar = double.tryParse(snapshot.data!['USD'] ?? '1.0') ?? 1.0;
+                      taxaEuro = double.tryParse(snapshot.data!['EUR'] ?? '1.0') ?? 1.0;
+                    }
+
+                    String displayDolar = snapshot.data?['USD'] ?? '---';
+                    String displayEuro = snapshot.data?['EUR'] ?? '---';
+
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        "Hoje: USD R\$ $displayDolar | EUR R\$ $displayEuro", 
+                        style: TextStyle(color: corBotao.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.bold)
+                      ),
+                    );
+                  }
+                ),
+                const SizedBox(height: 5),
+
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: moedaSelecionada,
+                          items: ['BRL', 'USD', 'EUR'].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setStateBottomSheet(() {
+                              moedaSelecionada = val!;
+                            });
+                          },
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: valorController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          labelText: 'Valor',
+                          prefixText: moedaSelecionada == 'BRL' ? 'R\$ ' : moedaSelecionada == 'USD' ? 'US\$ ' : '€ ',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -282,12 +349,20 @@ Future<Map<String, dynamic>?> mostrarPainelValor({
                       if (valorController.text.isNotEmpty) {
                         String valorTexto =
                             valorController.text.replaceAll(',', '.');
-                        double valor = double.tryParse(valorTexto) ?? 0.0;
+                        double valorDigitado = double.tryParse(valorTexto) ?? 0.0;
 
-                        if (valor > 0) {
+                        if (valorDigitado > 0) {
+                          
+                          double valorFinalConvertido = valorDigitado;
+                          if (moedaSelecionada == 'USD') {
+                            valorFinalConvertido = valorDigitado * taxaDolar;
+                          } else if (moedaSelecionada == 'EUR') {
+                            valorFinalConvertido = valorDigitado * taxaEuro;
+                          }
+
                           Navigator.pop(context, {
                             'titulo': tituloController.text.trim(),
-                            'valor': valor,
+                            'valor': valorFinalConvertido,
                             'data': data,
                             'dataFim': isRecorrente ? dataFim : null,
                             'imagemCaminho': caminhoImagemSelecionada,
