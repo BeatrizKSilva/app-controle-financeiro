@@ -1,53 +1,40 @@
-# Vinta Finanças
+# Vinta Finanças - Controle Financeiro
 
-**Vinta Finanças** é uma aplicação de controle financeiro pessoal desenvolvida em Flutter. O projeto foi estruturado com foco na usabilidade e organização de código, seguindo padrões de arquitetura modernos para a disciplina de Análise e Desenvolvimento de Sistemas.
+Um aplicativo de controle financeiro pessoal desenvolvido em Flutter, focado na gestão de receitas e despesas com armazenamento na nuvem e conversão de moedas em tempo real.
 
-## Autores
-* **Beatriz Silva**
-* **Carlos Tito**
+## Integrantes e Divisão de Tarefas
 
----
+* **Carlos Tito:** Implementação da arquitetura de Autenticação (Google Sign-In), persistência de sessão de usuário, consumo de API Web (AwesomeAPI) com integração de variáveis de ambiente (`.env`), e conversão automática de moedas na inserção de valores.
+* **Beatriz Silva:** Desenvolvimento da interface de categorias, integração com recursos nativos do dispositivo (Câmera/Galeria via `image_picker`) e gestão ponta a ponta de arquivos e comprovantes no Firebase Storage (upload e limpeza de imagens órfãs).
 
-## Funcionalidades
+## Funcionalidades e Tecnologias
 
-Nesta primeira fase, o foco foi a construção de uma interface robusta (UI), navegação fluida e tratamento de dados em memória.
+* **Firebase Auth & Firestore:** Autenticação de usuários e persistência de dados em tempo real.
+* **Consumo de API Externa:** Integração com a AwesomeAPI para cotações em tempo real do Dólar (USD) e Euro (EUR), realizando a conversão automática para Real (BRL) no momento do lançamento da transação.
+* **Recursos Nativos:** Utilização da câmera e galeria nativas do dispositivo para anexar comprovantes de pagamento, que são guardados no Firebase Storage.
+* **Transações Recorrentes:** Lógica para adição automatizada de transações repetitivas ao longo dos meses.
 
-* **Dashboard Principal:** Exibição de Saldo, Receitas e Despesas calculados dinamicamente.
-* **Calendário Customizado:** Seleção de mês e ano com sincronização global entre os ecrãs de início e gráficos.
-* **Gráficos Interativos:** Visualização de gastos por categoria através de gráficos de tarte dinâmicos (biblioteca `fl_chart`).
-* **Gestão de Transações:** Listagem de itens com suporte a gestos de arrastar (*Slidable*) para edição e exclusão.
-* **Gestão de Categorias:** Ecrãs para criar, editar e excluir categorias personalizadas com ícones e cores.
-* **Segurança e Validação:** Fluxo completo de Login e Registo com validação de campos e mensagens de feedback ao utilizador.
+## Como executar o projeto (Instruções de Instalação)
 
----
+Para executar este projeto em um novo ambiente, siga os passos abaixo:
 
-## Arquitetura do Projeto
+1. **Clone o repositório:**
+   ```bash
+   git clone [https://github.com/BeatrizKSilva/app-controle-financeiro.git](https://github.com/BeatrizKSilva/app-controle-financeiro.git)
+   ```
 
-O projeto utiliza o padrão **MVC (Model-View-Controller)** para garantir a separação de responsabilidades:
+2. **Configuração da API de Cotação:**
+   * Use a chave de api enviada junto com o link do github.
+   * Na raiz do projeto, crie um arquivo oculto chamado `.env` (utilize o `.env.example` como base).
+   * Adicione a sua chave no formato: `AWESOME_API_KEY = chave`.
 
-* **Views (`lib/views/`):** Contém todas as interfaces do utilizador e a estrutura visual da aplicação.
-* **Controllers (`lib/controllers/`):** Gere a lógica de negócio e a manipulação das listas de categorias e estados.
-* **Repositories/Mocks (`lib/repositories/`):** Simula a persistência de dados em memória (Utilizadores e Categorias estáticas) conforme os requisitos rigorosos desta etapa.
-* **Widgets (`lib/widgets/`):** Componentes isolados e reutilizáveis da interface.
-
----
-
-## Tecnologias Utilizadas
-
-* [Flutter](https://flutter.dev/) - Framework de UI.
-* [Dart](https://dart.dev/) - Linguagem de programação.
-* [fl_chart](https://pub.dev/packages/fl_chart) - Biblioteca para a criação de gráficos dinâmicos e responsivos.
-* [flutter_slidable](https://pub.dev/packages/flutter_slidable) - Pacote para interações avançadas de listas (swipe-to-delete).
-
----
-
-## Como Executar
-
-1. Certifique-se de que tem o ambiente Flutter configurado na sua máquina.
-2. Clone este repositório.
-3. Abra o terminal na raiz do projeto e instale as dependências:
+3. **Instalar dependências e executar:**
    ```bash
    flutter pub get
-4. Inicie a aplicação no seu emulador ou dispositivo físico:
-   ```bash
    flutter run
+   ```
+
+## Bugs Conhecidos e Funcionalidades Faltantes
+
+* **Bug Visual do Teclado:** Ao adicionar uma transação e selecionar uma moeda estrangeira no menu suspenso, existe um conflito nativo de perda de foco que causa o fechamento abrupto do teclado, provocando um pequeno ressalto na interface.
+* **Melhoria Futura:** Neste momento, não existe uma funcionalidade para a edição ou exclusão em lote de transações recorrentes.

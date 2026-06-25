@@ -175,6 +175,9 @@ class TransacaoController extends ChangeNotifier {
     String? imagemAntigaParaVerificar;
 
     if (novaImagemCaminho != transacaoOriginal.imagemCaminho) {
+
+      imagemAntigaParaVerificar = transacaoOriginal.imagemCaminho;
+
       if (novaImagemCaminho != null && !novaImagemCaminho.startsWith('http')) {
         linkImagemFinal = await _fazerUploadImagem(novaImagemCaminho);
       } else if (novaImagemCaminho == null) {
